@@ -1,3 +1,4 @@
+// netlify/functions/get-leads.js
 const { Client } = require('pg');
 
 exports.handler = async () => {
@@ -6,12 +7,19 @@ exports.handler = async () => {
     ssl: { rejectUnauthorized: false }
   });
 
-  await client.connect();
-  const res = await client.query('SELECT * FROM leads');
-  await client.end();
+  try {
+    await client.connect();
+    const res = await client.query('SELECT * FROM leads');
+    await client.end();
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify(res.rows)
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify(res.rows)
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
+  }
 };
