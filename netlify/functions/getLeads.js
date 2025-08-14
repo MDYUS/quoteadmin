@@ -1,9 +1,17 @@
-import { neon } from "@netlify/neon";
+const { Client } = require('pg');
 
-export default async (req, context) => {
-  const sql = neon();
-  const leads = await sql`SELECT * FROM leads`;
-  return new Response(JSON.stringify(leads), {
-    headers: { "Content-Type": "application/json" }
+exports.handler = async () => {
+  const client = new Client({
+    connectionString: process.env.psql 'postgresql://neondb_owner:npg_AXtDk2IVai9c@ep-solitary-thunder-ae2n8tmz-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+    ssl: { rejectUnauthorized: false }
   });
+
+  await client.connect();
+  const res = await client.query('SELECT * FROM leads');
+  await client.end();
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(res.rows)
+  };
 };
