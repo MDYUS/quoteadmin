@@ -1,47 +1,68 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { SiteVisit } from '../types';
-
-const SITE_VISITS_STORAGE_KEY = 'crm_site_visits_v2';
+import { supabase } from '../supabaseClient';
+import { toCamel, toSnake } from '../utils';
 
 export const useSiteVisits = () => {
-  const [siteVisits, setSiteVisits] = useState<SiteVisit[]>(() => {
+  const [siteVisits, setSiteVisits] = useState<SiteVisit[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchVisits = useCallback(async () => {
     try {
-      const storedVisits = localStorage.getItem(SITE_VISITS_STORAGE_KEY);
-      return storedVisits ? JSON.parse(storedVisits) : [];
-    } catch (error) {
-      console.error("Failed to parse site visits from localStorage", error);
-      return [];
+      const { data, error: dbError } = await supabase
+        .from('site_visits')
+        .select('*')
+        .order('date', { ascending: true })
+        .order('time', { ascending: true });
+
+      if (dbError) throw new Error(dbError.message);
+      setSiteVisits(toCamel(data) || []);
+    } catch (err: any) {
+      setError(`Failed to load site visits: ${err.message}`);
+      console.error(err);
+      throw err;
+    } finally {
+      setIsLoaded(true);
     }
-  });
-  
-  const sortVisits = (visits: SiteVisit[]) => {
-      return [...visits].sort((a, b) => {
-        const dateA = new Date(`${a.date}T${a.time}`);
-        const dateB = new Date(`${b.date}T${b.time}`);
-        return dateA.getTime() - dateB.getTime();
-      });
-  }
-  
+  }, []);
+
   useEffect(() => {
-    try {
-      localStorage.setItem(SITE_VISITS_STORAGE_KEY, JSON.stringify(siteVisits));
-    } catch (error) {
-      console.error("Failed to save site visits to localStorage", error);
+    fetchVisits().catch(() => {});
+  }, [fetchVisits]);
+
+  const addVisit = useCallback(async (visit: SiteVisit) => {
+    const { id, ...visitData } = visit;
+    const { data, error: dbError } = await supabase
+      .from('site_visits')
+      .insert(toSnake(visitData))
+      .select()
+      .single();
+    
+    if (dbError) throw new Error(dbError.message);
+    if (data) {
+      // Refetch to maintain sort order
+      await fetchVisits();
     }
-  }, [siteVisits]);
+  }, [fetchVisits]);
 
-  const addVisit = useCallback((visit: SiteVisit) => {
-    setSiteVisits(prev => sortVisits([...prev, visit]));
-  }, []);
+  const updateVisit = useCallback(async (updatedVisit: SiteVisit) => {
+    const { error: dbError } = await supabase
+      .from('site_visits')
+      .update(toSnake(updatedVisit))
+      .eq('id', updatedVisit.id);
+      
+    if (dbError) throw new Error(dbError.message);
+    // Refetch to maintain sort order
+    await fetchVisits();
+  }, [fetchVisits]);
 
-  const updateVisit = useCallback((updatedVisit: SiteVisit) => {
-    setSiteVisits(prev => sortVisits(prev.map(v => v.id === updatedVisit.id ? updatedVisit : v)));
-  }, []);
+  const deleteVisit = useCallback(async (visitId: string) => {
+    const { error: dbError } = await supabase.from('site_visits').delete().eq('id', visitId);
+    if (dbError) throw new Error(dbError.message);
+    await fetchVisits();
+  }, [fetchVisits]);
 
-  const deleteVisit = useCallback((visitId: string) => {
-    setSiteVisits(prev => prev.filter(v => v.id !== visitId));
-  }, []);
-
-  return { siteVisits, addVisit, updateVisit, deleteVisit };
+  return { siteVisits, addVisit, updateVisit, deleteVisit, isLoaded, error };
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSiteVisits } from '../hooks/useSiteVisits';
 import SiteVisitForm from './SiteVisitForm';
@@ -6,9 +7,10 @@ import { PlusIcon, CalendarIcon } from './icons';
 
 interface SiteVisitCalendarProps {
   setSuccessMessage: (message: string) => void;
+  setErrorMessage: (message: string) => void;
 }
 
-const SiteVisitCalendar: React.FC<SiteVisitCalendarProps> = ({ setSuccessMessage }) => {
+const SiteVisitCalendar: React.FC<SiteVisitCalendarProps> = ({ setSuccessMessage, setErrorMessage }) => {
   const { siteVisits, addVisit, updateVisit, deleteVisit } = useSiteVisits();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingVisit, setEditingVisit] = useState<SiteVisit | null>(null);
@@ -28,23 +30,31 @@ const SiteVisitCalendar: React.FC<SiteVisitCalendarProps> = ({ setSuccessMessage
     setEditingVisit(null);
   };
 
-  const handleSave = (visit: SiteVisit) => {
-    if (editingVisit) {
-      updateVisit(visit);
-      setSuccessMessage('Site visit updated successfully!');
-    } else {
-      addVisit(visit);
-      setSuccessMessage('Site visit added successfully!');
+  const handleSave = async (visit: SiteVisit) => {
+    try {
+      if (editingVisit) {
+        await updateVisit(visit);
+        setSuccessMessage('Site visit updated successfully!');
+      } else {
+        await addVisit(visit);
+        setSuccessMessage('Site visit added successfully!');
+      }
+      setIsFormVisible(false);
+      setEditingVisit(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to save site visit: ${error.message}`);
     }
-    setIsFormVisible(false);
-    setEditingVisit(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteVisit(id);
-    setSuccessMessage('Site visit deleted successfully.');
-    setIsFormVisible(false);
-    setEditingVisit(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteVisit(id);
+      setSuccessMessage('Site visit deleted successfully.');
+      setIsFormVisible(false);
+      setEditingVisit(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to delete site visit: ${error.message}`);
+    }
   };
   
   const formatDate = (dateString: string) => {

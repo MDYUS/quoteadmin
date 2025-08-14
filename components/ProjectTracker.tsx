@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { useProjects } from '../hooks/useProjects';
 import ProjectForm from './ProjectForm';
@@ -8,9 +7,10 @@ import { PlusIcon, ClipboardListIcon, DownloadIcon } from './icons';
 
 interface ProjectTrackerProps {
   setSuccessMessage: (message: string) => void;
+  setErrorMessage: (message: string) => void;
 }
 
-const ProjectTracker: React.FC<ProjectTrackerProps> = ({ setSuccessMessage }) => {
+const ProjectTracker: React.FC<ProjectTrackerProps> = ({ setSuccessMessage, setErrorMessage }) => {
   const { projects, addProject, updateProject, deleteProject } = useProjects();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -30,23 +30,31 @@ const ProjectTracker: React.FC<ProjectTrackerProps> = ({ setSuccessMessage }) =>
     setEditingProject(null);
   };
 
-  const handleSave = (project: Project) => {
-    if (editingProject) {
-      updateProject(project);
-      setSuccessMessage('Project updated successfully!');
-    } else {
-      addProject(project);
-      setSuccessMessage('Project added successfully!');
+  const handleSave = async (project: Project) => {
+    try {
+      if (editingProject) {
+        await updateProject(project);
+        setSuccessMessage('Project updated successfully!');
+      } else {
+        await addProject(project);
+        setSuccessMessage('Project added successfully!');
+      }
+      setIsFormVisible(false);
+      setEditingProject(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to save project: ${error.message}`);
     }
-    setIsFormVisible(false);
-    setEditingProject(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteProject(id);
-    setSuccessMessage('Project deleted successfully.');
-    setIsFormVisible(false);
-    setEditingProject(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProject(id);
+      setSuccessMessage('Project deleted successfully.');
+      setIsFormVisible(false);
+      setEditingProject(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to delete project: ${error.message}`);
+    }
   };
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);

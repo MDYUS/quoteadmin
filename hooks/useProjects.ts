@@ -1,39 +1,65 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Project } from '../types';
-
-const PROJECTS_STORAGE_KEY = 'crm_projects_v2';
+import { supabase } from '../supabaseClient';
+import { toCamel, toSnake } from '../utils';
 
 export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>(() => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProjects = useCallback(async () => {
     try {
-      const storedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
-      return storedProjects ? JSON.parse(storedProjects) : [];
-    } catch (error) {
-      console.error("Failed to parse projects from localStorage", error);
-      return [];
+      const { data, error: dbError } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbError) throw new Error(dbError.message);
+      setProjects(toCamel(data) || []);
+    } catch (err: any) {
+      setError(`Failed to load projects: ${err.message}`);
+      console.error(err);
+      throw err;
+    } finally {
+      setIsLoaded(true);
     }
-  });
+  }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
-    } catch (error) {
-      console.error("Failed to save projects to localStorage", error);
+    fetchProjects().catch(() => {});
+  }, [fetchProjects]);
+
+  const addProject = useCallback(async (project: Project) => {
+    const { id, ...projectData } = project;
+    const { data, error: dbError } = await supabase
+      .from('projects')
+      .insert(toSnake(projectData))
+      .select()
+      .single();
+
+    if (dbError) throw new Error(dbError.message);
+    if (data) {
+      await fetchProjects();
     }
-  }, [projects]);
+  }, [fetchProjects]);
 
-  const addProject = useCallback((project: Project) => {
-    setProjects(prev => [...prev, project]);
-  }, []);
+  const updateProject = useCallback(async (updatedProject: Project) => {
+    const { error: dbError } = await supabase
+      .from('projects')
+      .update(toSnake(updatedProject))
+      .eq('id', updatedProject.id);
 
-  const updateProject = useCallback((updatedProject: Project) => {
-    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
-  }, []);
+    if (dbError) throw new Error(dbError.message);
+    await fetchProjects();
+  }, [fetchProjects]);
 
-  const deleteProject = useCallback((projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
-  }, []);
+  const deleteProject = useCallback(async (projectId: string) => {
+    const { error: dbError } = await supabase.from('projects').delete().eq('id', projectId);
+    if (dbError) throw new Error(dbError.message);
+    await fetchProjects();
+  }, [fetchProjects]);
 
-  return { projects, addProject, updateProject, deleteProject };
+  return { projects, addProject, updateProject, deleteProject, isLoaded, error };
 };

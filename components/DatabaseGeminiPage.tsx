@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { Lead, Project, TeamMember, SiteVisit, ClientCommLog } from '../types';
@@ -37,11 +38,10 @@ const DatabaseGeminiPage: React.FC<DatabaseGeminiPageProps> = ({
         setResponse('');
 
         try {
-            // Safely access the API key from environment variables
-            const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : undefined;
+            const apiKey = process.env.API_KEY;
 
             if (!apiKey) {
-                throw new Error("API key is not configured. Please ensure the API_KEY environment variable is set in your deployment environment (e.g., Netlify settings).");
+                throw new Error("API key is not configured. Please ensure the API_KEY environment variable is set in your deployment environment.");
             }
             
             const ai = new GoogleGenAI({ apiKey });

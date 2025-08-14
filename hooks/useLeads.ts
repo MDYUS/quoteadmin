@@ -1,50 +1,68 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Lead } from '../types';
-
-const LEADS_STORAGE_KEY = 'crm_leads_v2';
+import { supabase } from '../supabaseClient';
+import { toCamel, toSnake } from '../utils';
 
 export const useLeads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  const fetchLeads = useCallback(async () => {
     try {
-      const storedLeads = localStorage.getItem(LEADS_STORAGE_KEY);
-      setLeads(storedLeads ? JSON.parse(storedLeads) : []);
+      const { data, error: dbError } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbError) throw new Error(dbError.message);
+      setLeads(toCamel(data) || []);
     } catch (err: any) {
-      setError("Failed to load leads from local storage.");
+      setError(`Failed to load leads: ${err.message}`);
       console.error(err);
+      throw err; // Re-throw for initial load error handling
     } finally {
       setIsLoaded(true);
     }
   }, []);
-  
-  // Save to localStorage on change
+
   useEffect(() => {
-    if (isLoaded) { // Don't save on initial empty state
-      try {
-        localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(leads));
-      } catch (err) {
-        console.error("Failed to save leads to localStorage", err);
-        setError("Failed to save leads.");
-      }
+    fetchLeads().catch(() => {
+      // Error is already set and thrown by fetchLeads,
+      // this catch block prevents an unhandled promise rejection error in the console.
+    });
+  }, [fetchLeads]);
+
+  const addLead = useCallback(async (lead: Lead) => {
+    const { id, ...leadData } = lead;
+    const { data, error: dbError } = await supabase
+      .from('leads')
+      .insert(toSnake(leadData))
+      .select()
+      .single();
+
+    if (dbError) throw new Error(dbError.message);
+    if (data) {
+      await fetchLeads();
     }
-  }, [leads, isLoaded]);
+  }, [fetchLeads]);
 
-  const addLead = useCallback((lead: Lead) => {
-    setLeads(prev => [...prev, lead]);
-  }, []);
+  const updateLead = useCallback(async (updatedLead: Lead) => {
+    const { error: dbError } = await supabase
+      .from('leads')
+      .update(toSnake(updatedLead))
+      .eq('id', updatedLead.id);
 
-  const updateLead = useCallback((updatedLead: Lead) => {
-    setLeads(prev => prev.map(l => l.id === updatedLead.id ? updatedLead : l));
-  }, []);
+    if (dbError) throw new Error(dbError.message);
+    await fetchLeads();
+  }, [fetchLeads]);
 
-  const deleteLead = useCallback((leadId: string) => {
-    setLeads(prev => prev.filter(l => l.id !== leadId));
-  }, []);
+  const deleteLead = useCallback(async (leadId: string) => {
+    const { error: dbError } = await supabase.from('leads').delete().eq('id', leadId);
+    if (dbError) throw new Error(dbError.message);
+    await fetchLeads();
+  }, [fetchLeads]);
 
   return { leads, addLead, updateLead, deleteLead, isLoaded, error };
 };

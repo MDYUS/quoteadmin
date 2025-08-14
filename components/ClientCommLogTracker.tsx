@@ -7,6 +7,7 @@ import { PlusIcon, ChatBubbleIcon, FileIcon, DownloadIcon } from './icons';
 
 interface ClientCommLogTrackerProps {
   setSuccessMessage: (message: string) => void;
+  setErrorMessage: (message: string) => void;
 }
 
 const FileLink: React.FC<{file: FileInfo}> = ({ file }) => (
@@ -15,7 +16,7 @@ const FileLink: React.FC<{file: FileInfo}> = ({ file }) => (
     </a>
 );
 
-const ClientCommLogTracker: React.FC<ClientCommLogTrackerProps> = ({ setSuccessMessage }) => {
+const ClientCommLogTracker: React.FC<ClientCommLogTrackerProps> = ({ setSuccessMessage, setErrorMessage }) => {
   const { logs, addLog, updateLog, deleteLog } = useClientCommLogs();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingLog, setEditingLog] = useState<ClientCommLog | null>(null);
@@ -35,23 +36,31 @@ const ClientCommLogTracker: React.FC<ClientCommLogTrackerProps> = ({ setSuccessM
     setEditingLog(null);
   };
 
-  const handleSave = (log: ClientCommLog) => {
-    if (editingLog) {
-      updateLog(log);
-      setSuccessMessage('Log updated successfully!');
-    } else {
-      addLog(log);
-      setSuccessMessage('Log added successfully!');
+  const handleSave = async (log: ClientCommLog) => {
+    try {
+      if (editingLog) {
+        await updateLog(log);
+        setSuccessMessage('Log updated successfully!');
+      } else {
+        await addLog(log);
+        setSuccessMessage('Log added successfully!');
+      }
+      setIsFormVisible(false);
+      setEditingLog(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to save log: ${error.message}`);
     }
-    setIsFormVisible(false);
-    setEditingLog(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteLog(id);
-    setSuccessMessage('Log deleted successfully.');
-    setIsFormVisible(false);
-    setEditingLog(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLog(id);
+      setSuccessMessage('Log deleted successfully.');
+      setIsFormVisible(false);
+      setEditingLog(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to delete log: ${error.message}`);
+    }
   };
 
   return (

@@ -1,39 +1,66 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { TeamMember } from '../types';
-
-const TEAM_MEMBERS_STORAGE_KEY = 'crm_team_members_v2';
+import { supabase } from '../supabaseClient';
+import { toCamel, toSnake } from '../utils';
 
 export const useTeamMembers = () => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(() => {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTeamMembers = useCallback(async () => {
     try {
-      const storedMembers = localStorage.getItem(TEAM_MEMBERS_STORAGE_KEY);
-      return storedMembers ? JSON.parse(storedMembers) : [];
-    } catch (error) {
-      console.error("Failed to parse team members from localStorage", error);
-      return [];
+      const { data, error: dbError } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (dbError) throw new Error(dbError.message);
+      setTeamMembers(toCamel(data) || []);
+    } catch (err: any) {
+      setError(`Failed to load team members: ${err.message}`);
+      console.error(err);
+      throw err;
+    } finally {
+      setIsLoaded(true);
     }
-  });
+  }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(TEAM_MEMBERS_STORAGE_KEY, JSON.stringify(teamMembers));
-    } catch (error) {
-      console.error("Failed to save team members to localStorage", error);
+    fetchTeamMembers().catch(() => {});
+  }, [fetchTeamMembers]);
+
+
+  const addTeamMember = useCallback(async (member: TeamMember) => {
+    const { id, ...memberData } = member;
+    const { data, error: dbError } = await supabase
+      .from('team_members')
+      .insert(toSnake(memberData))
+      .select()
+      .single();
+
+    if (dbError) throw new Error(dbError.message);
+    if (data) {
+      await fetchTeamMembers();
     }
-  }, [teamMembers]);
+  }, [fetchTeamMembers]);
 
-  const addTeamMember = useCallback((member: TeamMember) => {
-    setTeamMembers(prev => [...prev, member]);
-  }, []);
+  const updateTeamMember = useCallback(async (updatedMember: TeamMember) => {
+    const { error: dbError } = await supabase
+      .from('team_members')
+      .update(toSnake(updatedMember))
+      .eq('id', updatedMember.id);
 
-  const updateTeamMember = useCallback((updatedMember: TeamMember) => {
-    setTeamMembers(prev => prev.map(m => m.id === updatedMember.id ? updatedMember : m));
-  }, []);
+    if (dbError) throw new Error(dbError.message);
+    await fetchTeamMembers();
+  }, [fetchTeamMembers]);
 
-  const deleteTeamMember = useCallback((memberId: string) => {
-    setTeamMembers(prev => prev.filter(m => m.id !== memberId));
-  }, []);
+  const deleteTeamMember = useCallback(async (memberId: string) => {
+    const { error: dbError } = await supabase.from('team_members').delete().eq('id', memberId);
+    if (dbError) throw new Error(dbError.message);
+    await fetchTeamMembers();
+  }, [fetchTeamMembers]);
 
-  return { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember };
+  return { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember, isLoaded, error };
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTeamMembers } from '../hooks/useTeamMembers';
 import TeamMemberForm from './TeamMemberForm';
@@ -6,9 +7,10 @@ import { PlusIcon, UserCircleIcon } from './icons';
 
 interface TeamMemberTrackerProps {
   setSuccessMessage: (message: string) => void;
+  setErrorMessage: (message: string) => void;
 }
 
-const TeamMemberTracker: React.FC<TeamMemberTrackerProps> = ({ setSuccessMessage }) => {
+const TeamMemberTracker: React.FC<TeamMemberTrackerProps> = ({ setSuccessMessage, setErrorMessage }) => {
   const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember } = useTeamMembers();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
@@ -28,23 +30,31 @@ const TeamMemberTracker: React.FC<TeamMemberTrackerProps> = ({ setSuccessMessage
     setEditingMember(null);
   };
 
-  const handleSave = (member: TeamMember) => {
-    if (editingMember) {
-      updateTeamMember(member);
-      setSuccessMessage('Team member updated successfully!');
-    } else {
-      addTeamMember(member);
-      setSuccessMessage('Team member added successfully!');
+  const handleSave = async (member: TeamMember) => {
+    try {
+      if (editingMember) {
+        await updateTeamMember(member);
+        setSuccessMessage('Team member updated successfully!');
+      } else {
+        await addTeamMember(member);
+        setSuccessMessage('Team member added successfully!');
+      }
+      setIsFormVisible(false);
+      setEditingMember(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to save team member: ${error.message}`);
     }
-    setIsFormVisible(false);
-    setEditingMember(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteTeamMember(id);
-    setSuccessMessage('Team member deleted successfully.');
-    setIsFormVisible(false);
-    setEditingMember(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTeamMember(id);
+      setSuccessMessage('Team member deleted successfully.');
+      setIsFormVisible(false);
+      setEditingMember(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to delete team member: ${error.message}`);
+    }
   };
   
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
