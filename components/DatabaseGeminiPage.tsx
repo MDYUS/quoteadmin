@@ -138,7 +138,7 @@ const DatabaseGeminiPage: React.FC<DatabaseGeminiPageProps> = ({
                      {!isLoading && !response && !error && (
                         <div className="text-center py-10 px-6 h-full flex flex-col justify-center items-center border-2 border-dashed border-black rounded-lg bg-white">
                             <h3 className="text-lg font-medium text-black">Amaz Technology</h3>
-                            <p className="mt-1 text-sm text-black"> Amaz Backend Technology Powered By Zcy Server</p>
+                            <p className="mt-1 text-sm text-black">Amaz Backend Technology Powered By Zaacy Server</p>
                         </div>
                     )}
                 </div>
