@@ -13,8 +13,12 @@ const LOGO_URL =
 const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // ===== Helpers =====
-const formatCurrency = (amount: number) =>
-  amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatCurrency = (amount: number) => {
+  if (isNaN(amount)) return '0.00';
+  const parts = amount.toFixed(2).toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
 const calculateArea = (w: number, h: number) => (w * h) / MM2_TO_SQFT;
 const calculateAmount = (area: number, rate: number) => area * rate;
 
@@ -191,7 +195,7 @@ const QuotePage: FC = () => {
         doc.text(cat.title, margin, yPos);
         yPos += 6;
 
-        const head = [['S.No', 'ITEM', 'BWP Grade', 'Width (mm)', 'Height (mm)', 'Area (sqft)', 'Rate (₹/sqft)', 'Amount (₹)']];
+        const head = [['S.No', 'ITEM', 'BWP Grade', 'Width (mm)', 'Height (mm)', 'Area (sqft)', 'Rate (Rs./sqft)', 'Amount (Rs.)']];
         const body = cat.items.map((item, itemIndex) => {
           const area = calculateArea(item.width, item.height);
           const amount = calculateAmount(area, item.rate);
@@ -235,9 +239,9 @@ const QuotePage: FC = () => {
       // Totals
       autoTable(doc, {
         body: [
-          [{ content: 'Grand Total', styles: { fontStyle: 'bold' as const } }, { content: `₹ ${formatCurrency(calculations.grandTotal)}`, styles: { halign: 'right' as const } }],
-          [{ content: `GST @ ${GST_RATE * 100}%`, styles: { fontStyle: 'bold' as const } }, { content: `₹ ${formatCurrency(calculations.gstAmount)}`, styles: { halign: 'right' as const } }],
-          [{ content: 'Final Amount', styles: { fontStyle: 'bold' as const } }, { content: `₹ ${formatCurrency(calculations.finalAmount)}`, styles: { halign: 'right' as const, fontStyle: 'bold' as const } }]
+          [{ content: 'Grand Total', styles: { fontStyle: 'bold' as const } }, { content: `Rs. ${formatCurrency(calculations.grandTotal)}`, styles: { halign: 'right' as const } }],
+          [{ content: `GST @ ${GST_RATE * 100}%`, styles: { fontStyle: 'bold' as const } }, { content: `Rs. ${formatCurrency(calculations.gstAmount)}`, styles: { halign: 'right' as const } }],
+          [{ content: 'Final Amount', styles: { fontStyle: 'bold' as const } }, { content: `Rs. ${formatCurrency(calculations.finalAmount)}`, styles: { halign: 'right' as const, fontStyle: 'bold' as const } }]
         ],
         startY: yPos,
         theme: 'grid',
@@ -427,8 +431,8 @@ const QuotePage: FC = () => {
                       <th className="p-2 text-right text-xs font-bold w-24">Width (mm)</th>
                       <th className="p-2 text-right text-xs font-bold w-24">Height (mm)</th>
                       <th className="p-2 text-right text-xs font-bold w-24">Area (sqft)</th>
-                      <th className="p-2 text-right text-xs font-bold w-32">Rate (₹/sqft)</th>
-                      <th className="p-2 text-right text-xs font-bold w-32">Amount (₹)</th>
+                      <th className="p-2 text-right text-xs font-bold w-32">Rate (Rs./sqft)</th>
+                      <th className="p-2 text-right text-xs font-bold w-32">Amount (Rs.)</th>
                       <th className="p-2 text-center text-xs font-bold w-12"></th>
                     </tr>
                   </thead>
@@ -531,15 +535,15 @@ const QuotePage: FC = () => {
           <div className="w-full max-w-sm border border-black">
             <div className="flex justify-between p-2 border-b border-black">
               <span className="font-medium">Grand Total</span>
-              <span>₹ {formatCurrency(calculations.grandTotal)}</span>
+              <span>Rs. {formatCurrency(calculations.grandTotal)}</span>
             </div>
             <div className="flex justify-between p-2 border-b border-black">
               <span className="font-medium">GST ({GST_RATE * 100}%)</span>
-              <span>₹ {formatCurrency(calculations.gstAmount)}</span>
+              <span>Rs. {formatCurrency(calculations.gstAmount)}</span>
             </div>
             <div className="flex justify-between p-2 font-bold text-lg">
               <span>Final Amount</span>
-              <span>₹ {formatCurrency(calculations.finalAmount)}</span>
+              <span>Rs. {formatCurrency(calculations.finalAmount)}</span>
             </div>
           </div>
         </div>
