@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadStatus, FileInfo } from '../types';
 import { STATUS_OPTIONS } from '../constants';
@@ -16,7 +18,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
   const [phone, setPhone] = useState('');
   const [budget, setBudget] = useState('');
   const [scope, setScope] = useState('');
-  const [status, setStatus] = useState<LeadStatus>(LeadStatus.Contacted);
+  const [status, setStatus] = useState<LeadStatus>(LeadStatus.RecentlyAdded);
   const [details, setDetails] = useState('');
   const [floorPlan, setFloorPlan] = useState<FileInfo | null>(null);
   const [errors, setErrors] = useState<{ name?: string, phone?: string }>({});
@@ -26,7 +28,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
     setPhone(lead?.phone || '');
     setBudget(lead?.budget || '');
     setScope(lead?.scope || '');
-    setStatus(lead?.status || LeadStatus.Contacted);
+    setStatus(lead?.status || LeadStatus.RecentlyAdded);
     setDetails(lead?.details || '');
     setFloorPlan(lead?.floorPlan || null);
     setErrors({});
@@ -52,6 +54,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
       status,
       details,
       floorPlan,
+      createdAt: lead?.createdAt || new Date().toISOString(),
     };
     onSave(newLead);
   };
@@ -77,7 +80,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
     }
   }
   
-  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white";
+  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900";
   const errorInputClass = `${inputClass} border-red-500`;
 
   return (

@@ -7,6 +7,7 @@ interface StatusBadgeProps {
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   const statusColors: Record<LeadStatus, string> = {
+    [LeadStatus.RecentlyAdded]: 'bg-gray-100 text-gray-800',
     [LeadStatus.Contacted]: 'bg-blue-100 text-blue-800',
     [LeadStatus.FollowUp]: 'bg-yellow-100 text-yellow-800',
     [LeadStatus.SiteVisit]: 'bg-purple-100 text-purple-800',

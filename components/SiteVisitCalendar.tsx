@@ -1,17 +1,27 @@
 
+
 import React, { useState } from 'react';
-import { useSiteVisits } from '../hooks/useSiteVisits';
 import SiteVisitForm from './SiteVisitForm';
 import { SiteVisit } from '../types';
 import { PlusIcon, CalendarIcon } from './icons';
 
 interface SiteVisitCalendarProps {
+  siteVisits: SiteVisit[];
+  addVisit: (visit: SiteVisit) => Promise<void>;
+  updateVisit: (visit: SiteVisit) => Promise<void>;
+  deleteVisit: (id: string) => Promise<void>;
   setSuccessMessage: (message: string) => void;
   setErrorMessage: (message: string) => void;
 }
 
-const SiteVisitCalendar: React.FC<SiteVisitCalendarProps> = ({ setSuccessMessage, setErrorMessage }) => {
-  const { siteVisits, addVisit, updateVisit, deleteVisit } = useSiteVisits();
+const SiteVisitCalendar: React.FC<SiteVisitCalendarProps> = ({ 
+  siteVisits, 
+  addVisit, 
+  updateVisit, 
+  deleteVisit, 
+  setSuccessMessage, 
+  setErrorMessage 
+}) => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingVisit, setEditingVisit] = useState<SiteVisit | null>(null);
 

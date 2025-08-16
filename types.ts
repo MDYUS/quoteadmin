@@ -1,5 +1,6 @@
 
 export enum LeadStatus {
+  RecentlyAdded = 'Recently Added',
   Contacted = 'Contacted',
   FollowUp = 'Follow Up',
   SiteVisit = 'Site Visit',
@@ -21,6 +22,7 @@ export interface Lead {
   status: LeadStatus;
   details: string;
   floorPlan: FileInfo | null;
+  createdAt?: string;
 }
 
 // Types for Quote Generator (Excel-style)

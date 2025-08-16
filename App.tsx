@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
 import LeadForm from './components/LeadForm';
@@ -10,7 +12,7 @@ import ProjectTracker from './components/ProjectTracker';
 import TeamMemberTracker from './components/TeamMemberTracker';
 import ClientCommLogTracker from './components/ClientCommLogTracker';
 import DatabaseGeminiPage from './components/DatabaseGeminiPage';
-import { Lead } from './types';
+import { Lead, LeadStatus, SiteVisit } from './types';
 import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
@@ -19,7 +21,81 @@ import { useClientCommLogs } from './hooks/useClientCommLogs';
 import LoginPage from './components/LoginPage';
 
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'database';
+// --- ScheduleVisitModal Component Definition ---
+interface ScheduleVisitModalProps {
+  lead: Lead;
+  onSave: (visitData: { date: string; time: string; location: string }) => void;
+  onCancel: () => void;
+}
+
+const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, onCancel }) => {
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    setDate(new Date().toISOString().split('T')[0]);
+    setLocation(lead.scope || ''); // Prefill location from lead's scope
+  }, [lead]);
+
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!date) newErrors.date = 'Date is required.';
+    if (!time) newErrors.time = 'Time is required.';
+    if (!location.trim()) newErrors.location = 'Location is required.';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validate()) return;
+    onSave({ date, time, location });
+  };
+
+  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900";
+  const errorInputClass = `${inputClass} border-red-500`;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-xl font-semibold text-gray-900">Schedule Site Visit</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+            <XIcon className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">For Client: <span className="font-medium text-gray-900">{lead.name}</span></p>
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location (Address)</label>
+            <input type="text" id="location" value={location} onChange={e => setLocation(e.target.value)} className={errors.location ? errorInputClass : inputClass} />
+            {errors.location && <p className="text-red-600 text-xs mt-1">{errors.location}</p>}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
+              <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} className={errors.date ? errorInputClass : inputClass} />
+              {errors.date && <p className="text-red-600 text-xs mt-1">{errors.date}</p>}
+            </div>
+            <div>
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700">Time</label>
+              <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} className={errors.time ? errorInputClass : inputClass} />
+              {errors.time && <p className="text-red-600 text-xs mt-1">{errors.time}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end items-center space-x-3">
+          <button onClick={onCancel} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+          <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white border border-transparent rounded-md text-sm font-medium hover:bg-blue-700">Schedule & Save</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log';
 
 const App: React.FC = () => {
   // Main App State
@@ -32,7 +108,7 @@ const App: React.FC = () => {
 
   // Data Hooks
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
-  const { siteVisits, isLoaded: visitsLoaded, error: visitsError } = useSiteVisits();
+  const { siteVisits, addVisit, updateVisit, deleteVisit, isLoaded: visitsLoaded, error: visitsError } = useSiteVisits();
   const { projects, isLoaded: projectsLoaded, error: projectsError } = useProjects();
   const { teamMembers, isLoaded: teamLoaded, error: teamError } = useTeamMembers();
   const { logs, isLoaded: logsLoaded, error: logsError } = useClientCommLogs();
@@ -40,6 +116,7 @@ const App: React.FC = () => {
   // Leads-related state
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [schedulingVisitForLead, setSchedulingVisitForLead] = useState<Lead | null>(null);
   
   const displaySuccessMessage = (message: string) => {
       setSuccessMessage(message);
@@ -102,6 +179,45 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLeadStatusChange = (leadId: string, newStatus: LeadStatus) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (lead && lead.status !== newStatus) {
+      if (newStatus === LeadStatus.SiteVisit) {
+        // Open modal to schedule before updating status
+        setSchedulingVisitForLead({ ...lead, status: newStatus });
+      } else {
+        updateLead({ ...lead, status: newStatus })
+          .then(() => displaySuccessMessage(`Status updated for ${lead.name}`))
+          .catch(err => setErrorMessage(`Failed to update status: ${err.message}`));
+      }
+    }
+  };
+  
+  const handleScheduleAndSave = async (visitData: { date: string, time: string, location: string }) => {
+    if (!schedulingVisitForLead) return;
+  
+    try {
+      // 1. Create the site visit
+      await addVisit({
+        id: '', // DB will generate
+        clientName: schedulingVisitForLead.name,
+        phone: schedulingVisitForLead.phone,
+        location: visitData.location,
+        date: visitData.date,
+        time: visitData.time,
+      });
+      
+      // 2. Update the lead's status
+      await updateLead(schedulingVisitForLead);
+  
+      displaySuccessMessage('Site visit scheduled and lead updated!');
+    } catch (err: any) {
+      setErrorMessage(`Failed to schedule visit: ${err.message}`);
+    } finally {
+      setSchedulingVisitForLead(null);
+    }
+  };
+
   const handleLoginSuccess = (userId: string) => {
     setIsAuthenticated(true);
     setCurrentUser(userId);
@@ -111,6 +227,19 @@ const App: React.FC = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
   };
+  
+  const leadsForAlert = useMemo(() => {
+      return leads.filter(lead => {
+          if (!lead.createdAt) return false;
+          
+          const leadDate = new Date(lead.createdAt);
+          const now = new Date();
+          const threeDays = 3 * 24 * 60 * 60 * 1000;
+          const isRecent = (now.getTime() - leadDate.getTime()) < threeDays;
+          
+          return isRecent && lead.status === LeadStatus.Contacted;
+      });
+  }, [leads]);
 
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
@@ -168,7 +297,6 @@ const App: React.FC = () => {
       'projects': "Project Tracker",
       'team': "Team Members",
       'client-comm-log': "Client Communication Log",
-      'database': "Help"
   }
 
   return (
@@ -202,13 +330,26 @@ const App: React.FC = () => {
         </header>
 
         <main className="flex-1 bg-gray-100 overflow-y-auto">
-            {currentView === 'leads' && <LeadList leads={leads} onAdd={handleAddClick} onEdit={handleEditClick} />}
+            {currentView === 'leads' && leadsForAlert.length > 0 && (
+                <div className="bg-yellow-100 border-b border-yellow-300 text-yellow-800 overflow-hidden" role="alert">
+                    <p className="p-2 animate-marquee whitespace-nowrap">
+                        {leadsForAlert.map(lead => `"${lead.name}" - Recently Added. Please update status from 'Contacted'.`).join('  ★★★  ')}
+                    </p>
+                </div>
+            )}
+            {currentView === 'leads' && <LeadList leads={leads} onAdd={handleAddClick} onEdit={handleEditClick} onLeadStatusChange={handleLeadStatusChange} />}
             {currentView === 'quote' && <QuotePage />}
-            {currentView === 'site-visits' && <SiteVisitCalendar setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
+            {currentView === 'site-visits' && <SiteVisitCalendar 
+              siteVisits={siteVisits}
+              addVisit={addVisit}
+              updateVisit={updateVisit}
+              deleteVisit={deleteVisit}
+              setSuccessMessage={displaySuccessMessage} 
+              setErrorMessage={setErrorMessage} 
+            />}
             {currentView === 'projects' && <ProjectTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
             {currentView === 'team' && <TeamMemberTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
             {currentView === 'client-comm-log' && <ClientCommLogTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
-            {currentView === 'database' && <DatabaseGeminiPage leads={leads} projects={projects} teamMembers={teamMembers} siteVisits={siteVisits} clientLogs={logs} />}
         </main>
       </div>
 
@@ -218,6 +359,14 @@ const App: React.FC = () => {
           onSave={handleSave}
           onCancel={handleCancel}
           onDelete={handleDelete}
+        />
+      )}
+
+      {schedulingVisitForLead && (
+        <ScheduleVisitModal
+          lead={schedulingVisitForLead}
+          onSave={handleScheduleAndSave}
+          onCancel={() => setSchedulingVisitForLead(null)}
         />
       )}
       

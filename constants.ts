@@ -1,6 +1,7 @@
 import { LeadStatus, ProjectStatus, ProjectType } from './types';
 
 export const STATUS_OPTIONS: LeadStatus[] = [
+  LeadStatus.RecentlyAdded,
   LeadStatus.Contacted,
   LeadStatus.FollowUp,
   LeadStatus.SiteVisit,
