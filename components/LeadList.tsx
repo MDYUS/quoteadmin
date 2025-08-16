@@ -18,29 +18,29 @@ const LeadList: React.FC<LeadListProps> = ({ leads, onAdd, onEdit }) => {
             <div 
               key={lead.id} 
               onClick={() => onEdit(lead)} 
-              className="bg-white rounded-lg shadow-md hover:shadow-xl cursor-pointer transition-shadow duration-300 flex flex-col justify-between border border-black"
+              className="bg-white rounded-lg shadow-md hover:shadow-xl cursor-pointer transition-shadow duration-300 flex flex-col justify-between"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onEdit(lead)}
               aria-label={`View details for ${lead.name}`}
             >
               <div className="p-5">
-                <h3 className="text-lg font-bold text-black truncate">{lead.name}</h3>
-                <p className="text-sm text-black mt-1">{lead.phone}</p>
+                <h3 className="text-lg font-bold text-gray-900 truncate">{lead.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{lead.phone}</p>
               </div>
-              <div className="px-5 py-3 bg-white rounded-b-lg border-t border-black">
+              <div className="px-5 py-3 bg-gray-50 rounded-b-lg border-t border-gray-200">
                 <StatusBadge status={lead.status} />
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 px-6 bg-white rounded-lg shadow-md border border-black">
-          <FileIcon className="mx-auto h-12 w-12 text-black" />
-          <h3 className="mt-2 text-lg font-medium text-black">No leads yet</h3>
-          <p className="mt-1 text-sm text-black">Get started by adding a new lead.</p>
+        <div className="text-center py-16 px-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <FileIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-lg font-medium text-gray-900">No leads yet</h3>
+          <p className="mt-1 text-sm text-gray-500">Get started by adding a new lead.</p>
           <div className="mt-6">
-            <button onClick={onAdd} className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+            <button onClick={onAdd} className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
               Add Lead
             </button>

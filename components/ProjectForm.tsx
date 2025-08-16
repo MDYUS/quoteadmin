@@ -93,23 +93,23 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
 
-  const inputClass = "mt-1 block w-full border border-black rounded-md shadow-sm p-2 focus:ring-black focus:border-black bg-white";
-  const errorInputClass = `${inputClass} border-red-500 border-2`;
+  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white";
+  const errorInputClass = `${inputClass} border-red-500`;
   const fileInput = (id: string, file: FileInfo | null, setFile: React.Dispatch<React.SetStateAction<FileInfo | null>>, label: string) => (
     <div>
-        <label className="block text-sm font-bold text-black">{label}</label>
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
         {!file ? (
-            <label htmlFor={id} className="mt-1 cursor-pointer bg-white border-2 border-dashed border-black rounded-md p-4 flex flex-col items-center justify-center text-sm text-black hover:bg-gray-100">
-                <FileIcon className="w-8 h-8 mx-auto text-black"/>
+            <label htmlFor={id} className="mt-1 cursor-pointer bg-white border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center text-sm text-gray-500 hover:bg-gray-50">
+                <FileIcon className="w-8 h-8 mx-auto text-gray-400"/>
                 <span>Upload a file</span>
                 <input id={id} type="file" onChange={(e) => handleFileChange(e, setFile)} className="sr-only"/>
             </label>
         ) : (
-            <div className="mt-1 flex items-center justify-between border border-black rounded-md p-2">
-                <span className="text-sm font-medium text-black truncate">{file.name}</span>
+            <div className="mt-1 flex items-center justify-between border border-gray-300 rounded-md p-2">
+                <span className="text-sm font-medium text-gray-800 truncate">{file.name}</span>
                 <div className="flex items-center space-x-2">
-                    <a href={file.dataUrl} download={file.name} className="text-black hover:text-gray-700"><DownloadIcon/></a>
-                    <button onClick={() => setFile(null)} className="text-black hover:text-gray-700"><TrashIcon/></button>
+                    <a href={file.dataUrl} download={file.name} className="text-gray-500 hover:text-gray-700"><DownloadIcon/></a>
+                    <button onClick={() => setFile(null)} className="text-red-500 hover:text-red-700"><TrashIcon/></button>
                 </div>
             </div>
         )}
@@ -117,11 +117,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all max-h-full overflow-y-auto border-2 border-black">
-        <div className="px-6 py-4 border-b-2 border-black flex justify-between items-center sticky top-0 bg-white z-10">
-          <h3 className="text-xl font-semibold text-black">{project ? 'Edit Project' : 'Add New Project'}</h3>
-          <button onClick={onCancel} className="text-black hover:text-gray-700"><XIcon /></button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all max-h-full overflow-y-auto">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+          <h3 className="text-xl font-semibold text-gray-900">{project ? 'Edit Project' : 'Add New Project'}</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><XIcon /></button>
         </div>
         
         <div className="p-6">
@@ -129,23 +129,23 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
                 {/* Column 1: Client Info */}
                 <div className="space-y-6">
                     <div>
-                        <label htmlFor="name" className="block text-sm font-bold text-black">Name</label>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                         <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} className={errors.name ? errorInputClass : inputClass} />
-                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                        {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
                     </div>
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-bold text-black">Phone Number</label>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
                         <input type="text" id="phone" value={phone} onChange={e => setPhone(e.target.value)} className={errors.phone ? errorInputClass : inputClass} />
-                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                         {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
                     </div>
                     <div>
-                        <label htmlFor="status" className="block text-sm font-bold text-black">Current Status</label>
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">Current Status</label>
                         <select id="status" value={status} onChange={e => setStatus(e.target.value as ProjectStatus)} className={inputClass}>
                             {PROJECT_STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label htmlFor="type" className="block text-sm font-bold text-black">Type</label>
+                        <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
                         <select id="type" value={type} onChange={e => setType(e.target.value as ProjectType)} className={inputClass}>
                             {PROJECT_TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
@@ -155,20 +155,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
                 {/* Column 2: Financials */}
                 <div className="space-y-6">
                     <div>
-                        <label htmlFor="finalBudget" className="block text-sm font-bold text-black">Final Budget</label>
+                        <label htmlFor="finalBudget" className="block text-sm font-medium text-gray-700">Final Budget</label>
                         <input type="number" id="finalBudget" value={finalBudget} onChange={e => setFinalBudget(Number(e.target.value))} className={errors.finalBudget ? errorInputClass : inputClass} />
-                        {errors.finalBudget && <p className="text-red-500 text-xs mt-1">{errors.finalBudget}</p>}
+                        {errors.finalBudget && <p className="text-red-600 text-xs mt-1">{errors.finalBudget}</p>}
                     </div>
                     <div>
-                        <label htmlFor="advanceReceived" className="block text-sm font-bold text-black">Total Advance Received</label>
+                        <label htmlFor="advanceReceived" className="block text-sm font-medium text-gray-700">Total Advance Received</label>
                         <input type="number" id="advanceReceived" value={advanceReceived} onChange={e => setAdvanceReceived(Number(e.target.value))} className={inputClass} />
                     </div>
                      <div>
-                        <label htmlFor="discountAmount" className="block text-sm font-bold text-black">Discounted Amount</label>
+                        <label htmlFor="discountAmount" className="block text-sm font-medium text-gray-700">Discounted Amount</label>
                         <input type="number" id="discountAmount" value={discountAmount} onChange={e => setDiscountAmount(Number(e.target.value))} className={inputClass} />
                     </div>
-                    <div className="space-y-2 pt-2">
-                        <div className="flex justify-between text-sm"><span className="font-bold">Final Amount:</span><span>{formatCurrency(finalAmount)}</span></div>
+                    <div className="space-y-2 pt-2 bg-gray-50 p-3 rounded-md">
+                        <div className="flex justify-between text-sm"><span className="font-medium text-gray-600">Final Amount:</span><span className="font-semibold text-gray-800">{formatCurrency(finalAmount)}</span></div>
                         <div className="flex justify-between text-sm font-bold"><span className="text-red-600">Pending Amount:</span><span className="text-red-600">{formatCurrency(pendingAmount)}</span></div>
                     </div>
                 </div>
@@ -181,7 +181,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
             </div>
         </div>
 
-        <div className="px-6 py-4 bg-white rounded-b-lg flex justify-between items-center sticky bottom-0 border-t-2 border-black">
+        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-between items-center sticky bottom-0 border-t border-gray-200">
             <div>
                 {project && (
                     <button onClick={handleDelete} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium">
@@ -190,8 +190,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
                 )}
             </div>
             <div className="flex space-x-3">
-                <button onClick={onCancel} className="px-4 py-2 bg-white border border-black rounded-md text-sm font-medium text-black hover:bg-gray-100">Cancel</button>
-                <button onClick={handleSave} className="px-4 py-2 bg-black text-white border border-transparent rounded-md text-sm font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Save Project</button>
+                <button onClick={onCancel} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white border border-transparent rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Save Project</button>
             </div>
         </div>
       </div>

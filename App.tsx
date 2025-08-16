@@ -16,6 +16,7 @@ import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
 import { useClientCommLogs } from './hooks/useClientCommLogs';
+import LoginPage from './components/LoginPage';
 
 
 type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'database';
@@ -26,6 +27,8 @@ const App: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Data Hooks
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
@@ -37,7 +40,7 @@ const App: React.FC = () => {
   // Leads-related state
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
-
+  
   const displaySuccessMessage = (message: string) => {
       setSuccessMessage(message);
   }
@@ -98,6 +101,20 @@ const App: React.FC = () => {
         setErrorMessage(`Failed to delete lead: ${error.message}`);
     }
   };
+
+  const handleLoginSuccess = (userId: string) => {
+    setIsAuthenticated(true);
+    setCurrentUser(userId);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+  };
+
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
   
   const allDataLoaded = leadsLoaded && visitsLoaded && projectsLoaded && teamLoaded && logsLoaded;
   const anyError = leadsError || visitsError || projectsError || teamError || logsError;
@@ -105,8 +122,8 @@ const App: React.FC = () => {
   if (anyError) {
       const isRLSError = /permission denied/i.test(anyError);
       return (
-        <div className="flex items-center justify-center min-h-screen bg-white text-black p-4">
-            <div className="text-center max-w-3xl border-2 border-black p-6 sm:p-8 rounded-lg shadow-lg bg-gray-50">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800 p-4">
+            <div className="text-center max-w-3xl bg-white p-6 sm:p-8 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold text-red-600 mb-4">Application Error</h2>
                 
                 {isRLSError ? (
@@ -126,7 +143,7 @@ const App: React.FC = () => {
                     <p>Could not load application data. Please try refreshing the page.</p>
                 )}
 
-                <div className="mt-6 p-3 bg-red-100 text-red-700 rounded-md text-left font-mono text-xs sm:text-sm">
+                <div className="mt-6 p-3 bg-red-50 text-red-700 rounded-md text-left font-mono text-xs sm:text-sm">
                     <strong>Error Details:</strong>
                     <p className="break-words mt-1">{anyError}</p>
                 </div>
@@ -137,9 +154,9 @@ const App: React.FC = () => {
 
   if (!allDataLoaded) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-            <LoadingSpinner className="h-10 w-10 text-black" />
-            <p className="text-black text-lg mt-4">Loading Application Data...</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+            <LoadingSpinner className="h-10 w-10 text-blue-600" />
+            <p className="text-gray-700 text-lg mt-4">Loading Application Data...</p>
         </div>
       )
   }
@@ -157,29 +174,34 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-white font-sans overflow-hidden">
       <div className={`fixed inset-0 z-40 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar currentView={currentView} setCurrentView={(v) => {
-            setCurrentView(v as View);
-            setSidebarOpen(false);
-        }} />
+        <Sidebar 
+            currentView={currentView} 
+            setCurrentView={(v) => {
+                setCurrentView(v as View);
+                setSidebarOpen(false);
+            }}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+        />
       </div>
       
       {isSidebarOpen && <div className="fixed inset-0 bg-black opacity-50 z-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
 
       <div className="flex-1 flex flex-col overflow-auto">
-        <header className="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20 border-b border-black">
-            <button className="text-black md:hidden" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+        <header className="bg-white p-4 flex justify-between items-center sticky top-0 z-20 border-b border-gray-200">
+            <button className="text-gray-600 md:hidden" onClick={() => setSidebarOpen(!isSidebarOpen)}>
                 {isSidebarOpen ? <XIcon /> : <MenuIcon />}
             </button>
-            <h1 className="text-xl font-bold text-black hidden md:block">{viewTitles[currentView]}</h1>
+            <h1 className="text-xl font-bold text-gray-900 hidden md:block">{viewTitles[currentView]}</h1>
             {currentView === 'leads' && (
-                <button onClick={handleAddClick} className="flex items-center justify-center px-4 py-2 bg-black text-white rounded-md shadow-sm hover:bg-gray-800 transition-colors text-sm font-medium">
+                <button onClick={handleAddClick} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   <PlusIcon className="h-5 w-5 mr-2" />
                   Add Lead
                 </button>
             )}
         </header>
 
-        <main className="flex-1 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 bg-gray-100 overflow-y-auto">
             {currentView === 'leads' && <LeadList leads={leads} onAdd={handleAddClick} onEdit={handleEditClick} />}
             {currentView === 'quote' && <QuotePage />}
             {currentView === 'site-visits' && <SiteVisitCalendar setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
@@ -200,7 +222,7 @@ const App: React.FC = () => {
       )}
       
       {successMessage && (
-        <div className="fixed top-5 right-5 bg-black text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
+        <div className="fixed top-5 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
           <CheckCircleIcon className="h-6 w-6"/>
           <span>{successMessage}</span>
         </div>

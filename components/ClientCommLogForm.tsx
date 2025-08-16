@@ -60,66 +60,37 @@ const ClientCommLogForm: React.FC<ClientCommLogFormProps> = ({ log, onSave, onCa
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFileState: React.Dispatch<React.SetStateAction<FileInfo | null>>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFileState({ name: file.name, dataUrl: reader.result as string, type: file.type });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>, currentFiles: FileInfo[], setFilesState: React.Dispatch<React.SetStateAction<FileInfo[]>>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const filePromises = Array.from(files).map(file => (
-        new Promise<FileInfo>(resolve => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            resolve({ name: file.name, dataUrl: reader.result as string, type: file.type });
-          };
-          reader.readAsDataURL(file);
-        })
-      ));
-      Promise.all(filePromises).then(newFiles => {
-        setFilesState([...currentFiles, ...newFiles]);
-      });
-    }
-  };
-
   const removeFromFileList = (index: number, files: FileInfo[], setFiles: React.Dispatch<React.SetStateAction<FileInfo[]>>) => {
     const newFiles = [...files];
     newFiles.splice(index, 1);
     setFiles(newFiles);
   };
 
-  const inputClass = "mt-1 block w-full border border-black rounded-md shadow-sm p-2 focus:ring-black focus:border-black bg-white";
-  const errorInputClass = `${inputClass} border-red-500 border-2`;
+  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white";
+  const errorInputClass = `${inputClass} border-red-500`;
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all max-h-full overflow-y-auto border-2 border-black">
-        <div className="px-6 py-4 border-b-2 border-black flex justify-between items-center sticky top-0 bg-white z-10">
-          <h3 className="text-xl font-semibold text-black">{log ? 'Edit Log' : 'Add New Log'}</h3>
-          <button onClick={onCancel} className="text-black hover:text-gray-700"><XIcon /></button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all max-h-full overflow-y-auto">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+          <h3 className="text-xl font-semibold text-gray-900">{log ? 'Edit Log' : 'Add New Log'}</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600"><XIcon /></button>
         </div>
         
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="clientName" className="block text-sm font-bold text-black">Name</label>
+              <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">Name</label>
               <input type="text" id="clientName" value={clientName} onChange={e => setClientName(e.target.value)} className={errors.clientName ? errorInputClass : inputClass} />
-              {errors.clientName && <p className="text-red-500 text-xs mt-1">{errors.clientName}</p>}
+              {errors.clientName && <p className="text-red-600 text-xs mt-1">{errors.clientName}</p>}
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-bold text-black">Phone Number</label>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
               <input type="text" id="phone" value={phone} onChange={e => setPhone(e.target.value)} className={errors.phone ? errorInputClass : inputClass} />
-              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+              {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
             </div>
             <div className="md:col-span-2">
-              <label htmlFor="siteLocation" className="block text-sm font-bold text-black">Site Location</label>
+              <label htmlFor="siteLocation" className="block text-sm font-medium text-gray-700">Site Location</label>
               <input type="text" id="siteLocation" value={siteLocation} onChange={e => setSiteLocation(e.target.value)} className={inputClass} />
             </div>
           </div>
@@ -133,7 +104,7 @@ const ClientCommLogForm: React.FC<ClientCommLogFormProps> = ({ log, onSave, onCa
           <MultiFileInput id="otherDocs" files={otherDocs} setFiles={setOtherDocs} removeFile={removeFromFileList} label="Any Other Documents" accept=".pdf,.png,.jpg,.jpeg" />
         </div>
 
-        <div className="px-6 py-4 bg-white rounded-b-lg flex justify-between items-center sticky bottom-0 border-t-2 border-black">
+        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-between items-center sticky bottom-0 border-t border-gray-200">
           <div>
               {log && (
                   <button onClick={handleDelete} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium">
@@ -142,8 +113,8 @@ const ClientCommLogForm: React.FC<ClientCommLogFormProps> = ({ log, onSave, onCa
               )}
           </div>
           <div className="flex space-x-3">
-              <button onClick={onCancel} className="px-4 py-2 bg-white border border-black rounded-md text-sm font-medium text-black hover:bg-gray-100">Cancel</button>
-              <button onClick={handleSave} className="px-4 py-2 bg-black text-white border border-transparent rounded-md text-sm font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">Save Log</button>
+              <button onClick={onCancel} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white border border-transparent rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Save Log</button>
           </div>
         </div>
       </div>
@@ -154,11 +125,11 @@ const ClientCommLogForm: React.FC<ClientCommLogFormProps> = ({ log, onSave, onCa
 // Helper sub-components for file inputs
 const SingleFileInput = ({ id, file, setFile, label, accept }: { id: string, file: FileInfo | null, setFile: (f: FileInfo | null) => void, label: string, accept: string }) => (
     <div>
-      <label className="block text-sm font-bold text-black">{label}</label>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
       <div className="mt-1">
         {!file ? (
-          <label htmlFor={id} className="cursor-pointer bg-white border-2 border-dashed border-black rounded-md p-4 flex flex-col items-center justify-center text-sm text-black hover:bg-gray-100 h-full">
-            <FileIcon className="w-8 h-8 mx-auto text-black"/>
+          <label htmlFor={id} className="cursor-pointer bg-white border-2 border-dashed border-gray-300 rounded-md p-4 flex flex-col items-center justify-center text-sm text-gray-500 hover:bg-gray-50 h-full">
+            <FileIcon className="w-8 h-8 mx-auto text-gray-400"/>
             <span>Upload a file</span>
             <input id={id} type="file" accept={accept} onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -170,11 +141,11 @@ const SingleFileInput = ({ id, file, setFile, label, accept }: { id: string, fil
             }} className="sr-only"/>
           </label>
         ) : (
-          <div className="flex items-center justify-between border border-black rounded-md p-2">
-            <span className="text-sm font-medium text-black truncate">{file.name}</span>
+          <div className="flex items-center justify-between border border-gray-300 rounded-md p-2">
+            <span className="text-sm font-medium text-gray-800 truncate">{file.name}</span>
             <div className="flex items-center space-x-2">
-              <a href={file.dataUrl} download={file.name} className="text-black hover:text-gray-700"><DownloadIcon/></a>
-              <button onClick={() => setFile(null)} className="text-black hover:text-gray-700"><TrashIcon/></button>
+              <a href={file.dataUrl} download={file.name} className="text-gray-500 hover:text-gray-700"><DownloadIcon/></a>
+              <button onClick={() => setFile(null)} className="text-red-500 hover:text-red-700"><TrashIcon/></button>
             </div>
           </div>
         )}
@@ -184,22 +155,22 @@ const SingleFileInput = ({ id, file, setFile, label, accept }: { id: string, fil
 
 const MultiFileInput = ({ id, files, setFiles, removeFile, label, accept }: { id: string, files: FileInfo[], setFiles: React.Dispatch<React.SetStateAction<FileInfo[]>>, removeFile: any, label: string, accept: string }) => (
     <div>
-      <label className="block text-sm font-bold text-black">{label}</label>
-      <div className="mt-1 p-4 border-2 border-dashed border-black rounded-md">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="mt-1 p-4 border-2 border-dashed border-gray-300 rounded-md">
         {files.length > 0 && (
           <div className="space-y-2 mb-4">
             {files.map((file, index) => (
               <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md border border-gray-200">
-                <span className="text-sm font-medium text-black truncate">{file.name}</span>
+                <span className="text-sm font-medium text-gray-800 truncate">{file.name}</span>
                 <div className="flex items-center space-x-2">
-                   <a href={file.dataUrl} download={file.name} className="text-black hover:text-gray-700"><DownloadIcon className="h-4 w-4"/></a>
-                   <button onClick={() => removeFile(index, files, setFiles)} className="text-black hover:text-gray-700"><TrashIcon className="h-4 w-4"/></button>
+                   <a href={file.dataUrl} download={file.name} className="text-gray-500 hover:text-gray-700"><DownloadIcon className="h-4 w-4"/></a>
+                   <button onClick={() => removeFile(index, files, setFiles)} className="text-red-500 hover:text-red-700"><TrashIcon className="h-4 w-4"/></button>
                 </div>
               </div>
             ))}
           </div>
         )}
-        <label htmlFor={id} className="cursor-pointer flex items-center justify-center w-full px-4 py-2 bg-black text-white border border-transparent rounded-md text-sm font-medium hover:bg-gray-800">
+        <label htmlFor={id} className="cursor-pointer flex items-center justify-center w-full px-4 py-2 bg-blue-600 text-white border border-transparent rounded-md text-sm font-medium hover:bg-blue-700">
           <FileIcon className="w-5 h-5 mr-2"/>
           Add Files
           <input id={id} type="file" multiple accept={accept} onChange={(e) => {
