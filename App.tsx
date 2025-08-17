@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
@@ -11,7 +9,7 @@ import SiteVisitCalendar from './components/SiteVisitCalendar';
 import ProjectTracker from './components/ProjectTracker';
 import TeamMemberTracker from './components/TeamMemberTracker';
 import ClientCommLogTracker from './components/ClientCommLogTracker';
-import DatabaseGeminiPage from './components/DatabaseGeminiPage';
+import LeadHistory from './components/LeadHistory';
 import { Lead, LeadStatus, SiteVisit } from './types';
 import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
@@ -19,6 +17,7 @@ import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
 import { useClientCommLogs } from './hooks/useClientCommLogs';
 import LoginPage from './components/LoginPage';
+import { formatStatus } from './utils';
 
 
 // --- ScheduleVisitModal Component Definition ---
@@ -95,7 +94,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
 };
 
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
 
 const App: React.FC = () => {
   // Main App State
@@ -241,6 +240,25 @@ const App: React.FC = () => {
       });
   }, [leads]);
 
+  const staleLeadsForAlert = useMemo(() => {
+    return leads.filter(lead => {
+        if (!lead.createdAt) return false;
+        
+        const leadDate = new Date(lead.createdAt);
+        const now = new Date();
+        const oneDay = 24 * 60 * 60 * 1000;
+        const isOverdue = (now.getTime() - leadDate.getTime()) > oneDay;
+        
+        const isActionableStatus = [
+            LeadStatus.RecentlyAdded,
+            LeadStatus.Contacted,
+            LeadStatus.FollowUp
+        ].includes(lead.status);
+
+        return isOverdue && isActionableStatus;
+    });
+  }, [leads]);
+
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
@@ -297,6 +315,7 @@ const App: React.FC = () => {
       'projects': "Project Tracker",
       'team': "Team Members",
       'client-comm-log': "Client Communication Log",
+      'lead-history': "Lead History & Analytics",
   }
 
   return (
@@ -330,6 +349,13 @@ const App: React.FC = () => {
         </header>
 
         <main className="flex-1 bg-gray-100 overflow-y-auto">
+            {currentView === 'leads' && staleLeadsForAlert.length > 0 && (
+                <div className="bg-red-100 border-b border-red-300 text-red-800 overflow-hidden" role="alert">
+                    <p className="p-2 animate-marquee whitespace-nowrap">
+                        {staleLeadsForAlert.map(lead => `ACTION REQUIRED: "${lead.name}" has been in '${formatStatus(lead.status)}' status for over 24 hours.`).join('  ★★★  ')}
+                    </p>
+                </div>
+            )}
             {currentView === 'leads' && leadsForAlert.length > 0 && (
                 <div className="bg-yellow-100 border-b border-yellow-300 text-yellow-800 overflow-hidden" role="alert">
                     <p className="p-2 animate-marquee whitespace-nowrap">
@@ -350,6 +376,7 @@ const App: React.FC = () => {
             {currentView === 'projects' && <ProjectTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
             {currentView === 'team' && <TeamMemberTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
             {currentView === 'client-comm-log' && <ClientCommLogTracker setSuccessMessage={displaySuccessMessage} setErrorMessage={setErrorMessage} />}
+            {currentView === 'lead-history' && <LeadHistory leads={leads} />}
         </main>
       </div>
 

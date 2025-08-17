@@ -1,10 +1,10 @@
 
 export enum LeadStatus {
-  RecentlyAdded = 'Recently Added',
-  Contacted = 'Contacted',
-  FollowUp = 'Follow Up',
-  SiteVisit = 'Site Visit',
-  Booked = 'Booked'
+  RecentlyAdded = 'recently_added',
+  Contacted = 'contacted',
+  FollowUp = 'follow_up',
+  SiteVisit = 'site_visit',
+  Booked = 'booked'
 }
 
 export interface FileInfo {
@@ -61,18 +61,18 @@ export interface SiteVisit {
 
 // Types for Project Tracker
 export enum ProjectStatus {
-  JustStarted = 'Just Started',
-  Ongoing = 'Ongoing',
-  AlmostDone = 'Almost Done',
-  Handovered = 'Handovered'
+  JustStarted = 'just_started',
+  Ongoing = 'ongoing',
+  AlmostDone = 'almost_done',
+  Handovered = 'handovered'
 }
 
 export enum ProjectType {
-  FullHome = 'Full Home',
-  Kitchen = 'Kitchen',
-  Livingroom = 'Livingroom',
-  Bedroom = 'Bedroom',
-  Villa = 'Villa'
+  FullHome = 'full_home',
+  Kitchen = 'kitchen',
+  Livingroom = 'livingroom',
+  Bedroom = 'bedroom',
+  Villa = 'villa'
 }
 
 export interface Project {

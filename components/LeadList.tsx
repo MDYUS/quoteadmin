@@ -3,6 +3,7 @@ import { Lead, LeadStatus } from '../types';
 import StatusBadge from './StatusBadge';
 import { PlusIcon, FileIcon } from './icons';
 import { STATUS_OPTIONS } from '../constants';
+import { formatStatus } from '../utils';
 
 interface LeadListProps {
   leads: Lead[];
@@ -20,10 +21,19 @@ const isNew = (createdAt: string | undefined): boolean => {
 };
 
 const KanbanCard: React.FC<{lead: Lead, onEdit: (lead: Lead) => void}> = ({ lead, onEdit }) => {
+    const isRecentlyAdded = lead.status === LeadStatus.RecentlyAdded;
+
+    const cardClasses = [
+        "bg-white p-4 rounded-lg shadow-sm border cursor-pointer hover:shadow-md transition-all duration-200",
+        isRecentlyAdded 
+            ? 'border-red-500 animate-pulse-red-border' 
+            : 'border-gray-200 hover:border-blue-500'
+    ].join(' ');
+
     return (
         <div 
             onClick={() => onEdit(lead)}
-            className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-500 transition-all duration-200"
+            className={cardClasses}
             draggable
             onDragStart={(e) => {
                 e.dataTransfer.setData('leadId', lead.id);
@@ -33,7 +43,7 @@ const KanbanCard: React.FC<{lead: Lead, onEdit: (lead: Lead) => void}> = ({ lead
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onEdit(lead)}
             aria-label={`View details for ${lead.name}`}
         >
-            {isNew(lead.createdAt) && (
+            {isNew(lead.createdAt) && !isRecentlyAdded && (
                 <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded-full mb-2 inline-block">
                   New
                 </span>
@@ -77,7 +87,7 @@ const KanbanColumn: React.FC<{
     };
     
     const statusColors: Record<LeadStatus, string> = {
-      [LeadStatus.RecentlyAdded]: 'border-gray-500',
+      [LeadStatus.RecentlyAdded]: 'border-red-500',
       [LeadStatus.Contacted]: 'border-blue-500',
       [LeadStatus.FollowUp]: 'border-yellow-500',
       [LeadStatus.SiteVisit]: 'border-purple-500',
@@ -92,7 +102,7 @@ const KanbanColumn: React.FC<{
             onDrop={handleDrop}
         >
             <div className={`px-2 py-1 mb-3 border-l-4 ${statusColors[status]}`}>
-              <h3 className="font-bold text-gray-800">{status} <span className="text-sm font-normal text-gray-500">{leads.length}</span></h3>
+              <h3 className="font-bold text-gray-800">{formatStatus(status)} <span className="text-sm font-normal text-gray-500">{leads.length}</span></h3>
             </div>
             <div className="space-y-3 h-full overflow-y-auto">
                 {leads.map(lead => (

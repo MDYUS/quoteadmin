@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, ChatBubbleIcon, LogoutIcon } from './icons';
+import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, ChatBubbleIcon, LogoutIcon, DatabaseIcon } from './icons';
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
 
 interface SidebarProps {
   currentView: View;
@@ -93,6 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             setCurrentView={setCurrentView}
             icon={<ChatBubbleIcon className="w-6 h-6" />}
             label="Client Communication Log"
+          />
+          <NavItem 
+            view="lead-history"
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            icon={<DatabaseIcon className="w-6 h-6" />}
+            label="Lead History"
           />
         </ul>
       </div>

@@ -1,10 +1,9 @@
 
-
-
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadStatus, FileInfo } from '../types';
 import { STATUS_OPTIONS } from '../constants';
 import { XIcon, TrashIcon, DownloadIcon, FileIcon } from './icons';
+import { formatStatus } from '../utils';
 
 interface LeadFormProps {
   lead: Lead | null;
@@ -115,7 +114,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
               <select id="status" value={status} onChange={e => setStatus(e.target.value as LeadStatus)} className={inputClass}>
-                {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{formatStatus(opt)}</option>)}
               </select>
             </div>
             <div>

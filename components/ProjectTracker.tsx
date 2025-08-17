@@ -4,6 +4,7 @@ import { useProjects } from '../hooks/useProjects';
 import ProjectForm from './ProjectForm';
 import { Project, ProjectStatus } from '../types';
 import { PlusIcon, ClipboardListIcon, DownloadIcon } from './icons';
+import { formatStatus } from '../utils';
 
 interface ProjectTrackerProps {
   setSuccessMessage: (message: string) => void;
@@ -68,7 +69,7 @@ const ProjectTracker: React.FC<ProjectTrackerProps> = ({ setSuccessMessage, setE
     };
     return (
       <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClasses[status]}`}>
-        {status}
+        {formatStatus(status)}
       </span>
     );
   };
@@ -110,7 +111,7 @@ const ProjectTracker: React.FC<ProjectTrackerProps> = ({ setSuccessMessage, setE
                         <td className="px-4 py-4 whitespace-nowrap hidden lg:table-cell">
                            <StatusBadge status={project.status} />
                         </td>
-                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">{project.type}</td>
+                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">{formatStatus(project.type)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">{formatCurrency(pendingAmount > 0 ? pendingAmount : 0)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
                             <div className="flex items-center space-x-3">

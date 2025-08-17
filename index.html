@@ -27,10 +27,15 @@
                         '0%': { transform: 'translateX(100%)' },
                         '100%': { transform: 'translateX(-100%)' },
                       },
+                      'pulse-red-border': {
+                        '0%, 100%': { borderColor: 'rgba(239, 68, 68, 0.5)' },
+                        '50%': { borderColor: 'rgba(239, 68, 68, 1)' },
+                      },
                     },
                     animation: {
                       'fade-in-out': 'fade-in-out 3s ease-in-out forwards',
                       'marquee': 'marquee 25s linear infinite',
+                      'pulse-red-border': 'pulse-red-border 2.5s ease-in-out infinite',
                     },
                 },
             },

@@ -93,6 +93,12 @@ export const DatabaseIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+export const SparklesIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className || "h-6 w-6"} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m1-15l1.06 1.06M20.45 20.45L19.39 19.39M1 1l1.06 1.06M3 21l1.06-1.06M12 2v2m0 18v-2m8.49-10.49h-2M4.51 11.51H2.51m17-5.98l-1.06-1.06M7.55 19.39l-1.06 1.06M12 7a5 5 0 00-5 5a5 5 0 005 5a5 5 0 005-5a5 5 0 00-5-5z" />
+  </svg>
+);
+
 export const LoadingSpinner = ({ className }: { className?: string }) => (
     <svg className={className || "animate-spin h-5 w-5 text-white"} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

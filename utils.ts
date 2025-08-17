@@ -18,3 +18,11 @@ const convertKeys = (obj: any, converter: (key: string) => string): any => {
 
 export const toCamel = (obj: any) => convertKeys(obj, toCamelCase);
 export const toSnake = (obj: any) => convertKeys(obj, toSnakeCase);
+
+export const formatStatus = (status: string): string => {
+  if (!status) return '';
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};

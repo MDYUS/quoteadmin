@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Project, ProjectStatus, ProjectType, FileInfo } from '../types';
 import { PROJECT_STATUS_OPTIONS, PROJECT_TYPE_OPTIONS } from '../constants';
 import { XIcon, TrashIcon, DownloadIcon, FileIcon } from './icons';
+import { formatStatus } from '../utils';
 
 interface ProjectFormProps {
   project: Project | null;
@@ -141,13 +142,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCancel, on
                     <div>
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700">Current Status</label>
                         <select id="status" value={status} onChange={e => setStatus(e.target.value as ProjectStatus)} className={inputClass}>
-                            {PROJECT_STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            {PROJECT_STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{formatStatus(opt)}</option>)}
                         </select>
                     </div>
                      <div>
                         <label htmlFor="type" className="block text-sm font-medium text-gray-700">Type</label>
                         <select id="type" value={type} onChange={e => setType(e.target.value as ProjectType)} className={inputClass}>
-                            {PROJECT_TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            {PROJECT_TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{formatStatus(opt)}</option>)}
                         </select>
                     </div>
                 </div>

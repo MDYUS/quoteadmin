@@ -1,5 +1,6 @@
 import React from 'react';
 import { LeadStatus } from '../types';
+import { formatStatus } from '../utils';
 
 interface StatusBadgeProps {
   status: LeadStatus;
@@ -16,7 +17,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
   return (
     <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[status]}`}>
-      {status}
+      {formatStatus(status)}
     </span>
   );
 };
