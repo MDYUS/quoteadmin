@@ -16,16 +16,40 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
+                    colors: {
+                        primary: {
+                          '50': '#eff6ff',
+                          '100': '#dbeafe',
+                          '200': '#bfdbfe',
+                          '300': '#93c5fd',
+                          '400': '#60a5fa',
+                          '500': '#3b82f6',
+                          '600': '#2563eb',
+                          '700': '#1d4ed8',
+                          '800': '#1e40af',
+                          '900': '#1e3a8a',
+                          '950': '#172554',
+                        },
+                        neutral: {
+                           '50': '#f8fafc',
+                           '100': '#f1f5f9',
+                           '200': '#e2e8f0',
+                           '300': '#cbd5e1',
+                           '400': '#94a3b8',
+                           '500': '#64748b',
+                           '600': '#475569',
+                           '700': '#334155',
+                           '800': '#1e293b',
+                           '900': '#0f172a',
+                           '950': '#020617',
+                        }
+                    },
                     keyframes: {
                       'fade-in-out': {
                         '0%': { opacity: '0', transform: 'translateY(-20px)' },
                         '10%': { opacity: '1', transform: 'translateY(0)' },
                         '90%': { opacity: '1', transform: 'translateY(0)' },
                         '100%': { opacity: '0', transform: 'translateY(-20px)' },
-                      },
-                      'marquee': {
-                        '0%': { transform: 'translateX(100%)' },
-                        '100%': { transform: 'translateX(-100%)' },
                       },
                       'pulse-red-border': {
                         '0%, 100%': { borderColor: 'rgba(239, 68, 68, 0.5)' },
@@ -34,7 +58,6 @@
                     },
                     animation: {
                       'fade-in-out': 'fade-in-out 3s ease-in-out forwards',
-                      'marquee': 'marquee 25s linear infinite',
                       'pulse-red-border': 'pulse-red-border 2.5s ease-in-out infinite',
                     },
                 },
@@ -48,14 +71,14 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #e2e8f0;
         }
         ::-webkit-scrollbar-thumb {
-            background: #2563eb;
+            background: #94a3b8;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #1d4ed8;
+            background: #64748b;
         }
         @media print {
           .no-print {
@@ -78,7 +101,7 @@
 }
 </script>
 </head>
-  <body class="bg-white font-sans">
+  <body class="bg-neutral-100 font-sans">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>

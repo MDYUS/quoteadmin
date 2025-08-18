@@ -11,6 +11,7 @@ interface LoginPageProps {
 const users: Record<string, string> = {
   '456777': 'Amaz@m25@27',
   '786786': 'INTER@7m',
+  '667733': 'Amaz@25@m25',
 };
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
@@ -39,21 +40,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }, 500);
   };
   
-  const inputClass = "block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500";
+  const inputClass = "block w-full px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-lg text-sm text-neutral-900 shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 font-sans">
+    <div className="min-h-screen bg-neutral-100 flex flex-col justify-center items-center p-4 font-sans">
       <div className="w-full max-w-sm mx-auto">
-         <div className="text-center mb-6">
+         <div className="text-center mb-8">
             <img src={LOGO_URL} alt="Company Logo" className="h-24 w-24 object-contain mx-auto" />
-            <h1 className="text-2xl font-bold mt-2 text-gray-900">Your Family Interior</h1>
-            <p className="text-sm text-gray-600">Accessing AMAZ CRM Head</p>
+            <h1 className="text-3xl font-bold mt-4 text-neutral-900">Your Family Interior</h1>
+            <p className="text-md text-neutral-600">AMAZ CRM Portal</p>
         </div>
 
-        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md border border-gray-200">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-neutral-200">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label htmlFor="amazId" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="amazId" className="block text-sm font-medium text-neutral-700">
                 Amaz ID
               </label>
               <div className="mt-1">
@@ -72,7 +73,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
                 Password
               </label>
               <div className="mt-1">
@@ -100,16 +101,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? <LoadingSpinner className="h-5 w-5 text-white" /> : 'Log In'}
               </button>
             </div>
           </form>
         </div>
-        <footer className="text-center text-xs text-gray-500 mt-8">
+        <footer className="text-center text-xs text-neutral-500 mt-8">
             <p>Powered by AMAZ</p>
-            <p className="mt-1">Secured by End-to-End Encrypted Server</p>
         </footer>
       </div>
     </div>

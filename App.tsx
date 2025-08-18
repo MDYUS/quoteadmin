@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
@@ -52,41 +53,41 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
     onSave({ date, time, location });
   };
 
-  const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900";
+  const inputClass = "mt-1 block w-full border border-neutral-300 rounded-lg shadow-sm p-3 focus:ring-primary-500 focus:border-primary-500 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400";
   const errorInputClass = `${inputClass} border-red-500`;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-gray-900">Schedule Site Visit</h3>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
+        <div className="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
+          <h3 className="text-xl font-semibold text-neutral-900">Schedule Site Visit</h3>
+          <button onClick={onCancel} className="text-neutral-400 hover:text-neutral-600">
             <XIcon className="h-6 w-6" />
           </button>
         </div>
         <div className="p-6 space-y-4">
-          <p className="text-sm text-gray-600">For Client: <span className="font-medium text-gray-900">{lead.name}</span></p>
+          <p className="text-sm text-neutral-600">For Client: <span className="font-medium text-neutral-900">{lead.name}</span></p>
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location (Address)</label>
+            <label htmlFor="location" className="block text-sm font-medium text-neutral-700">Location (Address)</label>
             <input type="text" id="location" value={location} onChange={e => setLocation(e.target.value)} className={errors.location ? errorInputClass : inputClass} />
             {errors.location && <p className="text-red-600 text-xs mt-1">{errors.location}</p>}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
+              <label htmlFor="date" className="block text-sm font-medium text-neutral-700">Date</label>
               <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} className={errors.date ? errorInputClass : inputClass} />
               {errors.date && <p className="text-red-600 text-xs mt-1">{errors.date}</p>}
             </div>
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700">Time</label>
+              <label htmlFor="time" className="block text-sm font-medium text-neutral-700">Time</label>
               <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} className={errors.time ? errorInputClass : inputClass} />
               {errors.time && <p className="text-red-600 text-xs mt-1">{errors.time}</p>}
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end items-center space-x-3">
-          <button onClick={onCancel} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white border border-transparent rounded-md text-sm font-medium hover:bg-blue-700">Schedule & Save</button>
+        <div className="px-6 py-4 bg-neutral-50 rounded-b-xl flex justify-end items-center space-x-3">
+          <button onClick={onCancel} className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50">Cancel</button>
+          <button onClick={handleSave} className="px-4 py-2 bg-primary-600 text-white border border-transparent rounded-lg text-sm font-medium hover:bg-primary-700">Schedule & Save</button>
         </div>
       </div>
     </div>
@@ -95,6 +96,19 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
 
 
 type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
+
+const userNames: Record<string, string> = {
+  '786786': 'Yusuf',
+  '667733': 'AKKA',
+};
+
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+};
+
 
 const App: React.FC = () => {
   // Main App State
@@ -227,19 +241,6 @@ const App: React.FC = () => {
     setCurrentUser(null);
   };
   
-  const leadsForAlert = useMemo(() => {
-      return leads.filter(lead => {
-          if (!lead.createdAt) return false;
-          
-          const leadDate = new Date(lead.createdAt);
-          const now = new Date();
-          const threeDays = 3 * 24 * 60 * 60 * 1000;
-          const isRecent = (now.getTime() - leadDate.getTime()) < threeDays;
-          
-          return isRecent && lead.status === LeadStatus.Contacted;
-      });
-  }, [leads]);
-
   const staleLeadsForAlert = useMemo(() => {
     return leads.filter(lead => {
         if (!lead.createdAt) return false;
@@ -258,6 +259,14 @@ const App: React.FC = () => {
         return isOverdue && isActionableStatus;
     });
   }, [leads]);
+  
+  const greetingMessage = useMemo(() => {
+    if (!currentUser) return '';
+    const greeting = getGreeting();
+    const userName = userNames[currentUser];
+    return userName ? `${greeting}, ${userName}` : greeting;
+  }, [currentUser]);
+
 
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
@@ -269,7 +278,7 @@ const App: React.FC = () => {
   if (anyError) {
       const isRLSError = /permission denied/i.test(anyError);
       return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800 p-4">
+        <div className="flex items-center justify-center min-h-screen bg-neutral-100 text-neutral-800 p-4">
             <div className="text-center max-w-3xl bg-white p-6 sm:p-8 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold text-red-600 mb-4">Application Error</h2>
                 
@@ -301,9 +310,9 @@ const App: React.FC = () => {
 
   if (!allDataLoaded) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-            <LoadingSpinner className="h-10 w-10 text-blue-600" />
-            <p className="text-gray-700 text-lg mt-4">Loading Application Data...</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-100">
+            <LoadingSpinner className="h-10 w-10 text-primary-600" />
+            <p className="text-neutral-700 text-lg mt-4">Loading Application Data...</p>
         </div>
       )
   }
@@ -335,34 +344,34 @@ const App: React.FC = () => {
       {isSidebarOpen && <div className="fixed inset-0 bg-black opacity-50 z-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>}
 
       <div className="flex-1 flex flex-col overflow-auto">
-        <header className="bg-white p-4 flex justify-between items-center sticky top-0 z-20 border-b border-gray-200">
-            <button className="text-gray-600 md:hidden" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-                {isSidebarOpen ? <XIcon /> : <MenuIcon />}
-            </button>
-            <h1 className="text-xl font-bold text-gray-900 hidden md:block">{viewTitles[currentView]}</h1>
+        <header className="bg-white p-4 flex justify-between items-center sticky top-0 z-20 border-b border-neutral-200">
+            <div className="flex items-center gap-4">
+                <button className="text-neutral-600 md:hidden" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+                    {isSidebarOpen ? <XIcon /> : <MenuIcon />}
+                </button>
+                <div className="flex flex-col">
+                  <h1 className="text-xl font-bold text-neutral-900">{viewTitles[currentView]}</h1>
+                  <p className="text-sm text-neutral-500 hidden md:block">{greetingMessage}</p>
+                </div>
+            </div>
             {currentView === 'leads' && (
-                <button onClick={handleAddClick} className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button onClick={handleAddClick} className="flex-shrink-0 flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg shadow-sm hover:bg-primary-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                   <PlusIcon className="h-5 w-5 mr-2" />
                   Add Lead
                 </button>
             )}
         </header>
 
-        <main className="flex-1 bg-gray-100 overflow-y-auto">
+        <main className="flex-1 bg-neutral-100 overflow-y-auto">
             {currentView === 'leads' && staleLeadsForAlert.length > 0 && (
-                <div className="bg-red-100 border-b border-red-300 text-red-800 overflow-hidden" role="alert">
-                    <p className="p-2 animate-marquee whitespace-nowrap">
-                        {staleLeadsForAlert.map(lead => `ACTION REQUIRED: "${lead.name}" has been in '${formatStatus(lead.status)}' status for over 24 hours.`).join('  ★★★  ')}
+                <div className="bg-red-100 border-b border-red-200 text-red-800 p-3 text-sm" role="alert">
+                    <p className="font-bold">Action Required</p>
+                    <p>
+                        {staleLeadsForAlert.length} lead(s) require attention. "{staleLeadsForAlert[0].name}" has been in '{formatStatus(staleLeadsForAlert[0].status)}' status for over 24 hours.
                     </p>
                 </div>
             )}
-            {currentView === 'leads' && leadsForAlert.length > 0 && (
-                <div className="bg-yellow-100 border-b border-yellow-300 text-yellow-800 overflow-hidden" role="alert">
-                    <p className="p-2 animate-marquee whitespace-nowrap">
-                        {leadsForAlert.map(lead => `"${lead.name}" - Recently Added. Please update status from 'Contacted'.`).join('  ★★★  ')}
-                    </p>
-                </div>
-            )}
+            
             {currentView === 'leads' && <LeadList leads={leads} onAdd={handleAddClick} onEdit={handleEditClick} onLeadStatusChange={handleLeadStatusChange} />}
             {currentView === 'quote' && <QuotePage />}
             {currentView === 'site-visits' && <SiteVisitCalendar 
@@ -398,14 +407,14 @@ const App: React.FC = () => {
       )}
       
       {successMessage && (
-        <div className="fixed top-5 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
-          <CheckCircleIcon className="h-6 w-6"/>
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-neutral-800 text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
+          <CheckCircleIcon className="h-6 w-6 text-green-400"/>
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 z-50 animate-fade-in-out">
           <XCircleIcon className="h-6 w-6"/>
           <span>{errorMessage}</span>
         </div>
