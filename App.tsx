@@ -351,7 +351,7 @@ const App: React.FC = () => {
                 </button>
                 <div className="flex flex-col">
                   <h1 className="text-xl font-bold text-neutral-900">{viewTitles[currentView]}</h1>
-                  <p className="text-sm text-neutral-500 hidden md:block">{greetingMessage}</p>
+                  <p className="text-sm text-neutral-500">{greetingMessage}</p>
                 </div>
             </div>
             {currentView === 'leads' && (
