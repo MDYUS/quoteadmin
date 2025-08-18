@@ -259,6 +259,10 @@ const App: React.FC = () => {
         return isOverdue && isActionableStatus;
     });
   }, [leads]);
+
+  const recentlyAddedLeadsCount = useMemo(() => {
+    return leads.filter(lead => lead.status === LeadStatus.RecentlyAdded).length;
+  }, [leads]);
   
   const greetingMessage = useMemo(() => {
     if (!currentUser) return '';
@@ -351,7 +355,7 @@ const App: React.FC = () => {
                 </button>
                 <div className="flex flex-col">
                   <h1 className="text-xl font-bold text-neutral-900">{viewTitles[currentView]}</h1>
-                  <p className="text-sm text-neutral-500">{greetingMessage}</p>
+                  <p className="text-sm text-neutral-500 hidden md:block">{greetingMessage}</p>
                 </div>
             </div>
             {currentView === 'leads' && (
@@ -372,6 +376,14 @@ const App: React.FC = () => {
                 </div>
             )}
             
+            {currentView === 'leads' && recentlyAddedLeadsCount > 0 && (
+                <div className="bg-blue-100 border-b border-blue-200 text-blue-800 p-3 text-sm" role="status">
+                     <p>
+                        <span className="font-bold">{recentlyAddedLeadsCount}</span> lead(s) are in 'Recently Added' status. Please update them to the next stage.
+                    </p>
+                </div>
+            )}
+
             {currentView === 'leads' && <LeadList leads={leads} onAdd={handleAddClick} onEdit={handleEditClick} onLeadStatusChange={handleLeadStatusChange} />}
             {currentView === 'quote' && <QuotePage />}
             {currentView === 'site-visits' && <SiteVisitCalendar 
