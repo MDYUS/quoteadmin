@@ -11,7 +11,7 @@ interface LoginPageProps {
 const users: Record<string, string> = {
   '456777': 'Amaz@m25@27',
   '786786': 'INTER@7m',
-  '667733': 'Amaz@25@m25',
+  '667733': 'AMAZ@25int',
 };
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
