@@ -1,7 +1,6 @@
 
 
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
 import LeadForm from './components/LeadForm';
@@ -21,8 +20,6 @@ import { useClientCommLogs } from './hooks/useClientCommLogs';
 import LoginPage from './components/LoginPage';
 import { formatStatus } from './utils';
 import WarningPopup from './components/WarningPopup';
-
-const WARNING_SOUND_B64 = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTSEUAAAAbAAADN1VzZXJzL21hY3VzZXIvRG93bmxvYWRzL2ludGVyZmFjZS13YXJuaW5nLTItNjY4MS5tcDNMQU1FMy4xMDAuMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-GYIKAIkBAAABAAAAAAAAAAFMYXZjNTguOTEuMTAwAAAAAAAAAAAAAAD/+kAAAAAAAAAAAAD/+kYgAAAGoAAABpAAAAlkFQUEQAAAAAAAABAAADDAAIgAAMFBEAAACAmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZm//pWIAAANIAAAAATEAAABsAAAAAP/pgAAARAAAAAAAQAAA0wACIAAEM1BEAAACA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-pRgAAAAPpAAAATEAAABsAAAAAP/pAAAAEQAAAAAAAQAAA0wACIAAEM1BEAAACA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-1YgAAGkAAAAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq-1YgAAGkEAAAAgAAAAALKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq-1YgAAAaQQAAACAAAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-MYgAAAaQQAAACAAAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-UYgAAAaQQAAACAAAAAqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq-dYgAABpBAAAAJAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-GYgAABpBAAAAJAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-pYgAAGkEAAAAgAAAAANVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-1YgAAGkEAAAAgAAAAANVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-9YgAAGkEAAAAgAAAAANVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-1oAACAIAAANIAYdEn////////////yP//9H/////////////////8f///////x////////////////f///////////////////////9f////////f////////////////v////3//7///f/79/7////d//9//v3/+/+H//3//3/+///+//f//f///3/f//f/7//f9//9/+/////f/////////////////////////////////////////////////9////////f///////////////////////9////////////////f///////////////////////////////////////////////////3//////3////9////f////////////////////9//f////f///f////v////f///////////////////////////////////f/f//9/7///7/////+H////3//////3////9////f//3/f//f///3//3//////w==';
 
 // --- ScheduleVisitModal Component Definition ---
 interface ScheduleVisitModalProps {
@@ -112,6 +109,8 @@ const getGreeting = () => {
     return "Good Evening";
 };
 
+// A reliable, audible, and self-contained warning sound in base64 format.
+const WARNING_SOUND_BASE64 = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVEwT19LALsCFgCFAR2/tS/9/f7e/Yf/c/wZ/4X/9f6d/pv+Jf8r/4D/SP/T/rf/Ev9t/6YBGRsQ/7f+s/9t/9n/wP/MAHkBPwEAASEENwR1BkcGwgfJCAsJ0Qo/DEcNKg+yEFsS1xQJFRgXRBdaGD8ZehpJG8Adwh4BHwogHiEnIiwwJjAuMDYyNDU1NkE4Rjw/QUNDREhFR0lKTE1PTVBRUlNUVFVXV1hZWltcXV5gX2Zjam5xdXt/gIKDiIaLi4+PkZKTlZeYmZucnZ6foaKjpKanqKqsra6vsLGztLa4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NjZ2tvj4+Xm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1VWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==';
 
 const App: React.FC = () => {
   // Main App State
@@ -125,16 +124,10 @@ const App: React.FC = () => {
   // State for the warning popup
   const [isWarningPopupVisible, setWarningPopupVisible] = useState(false);
   const [warningLeads, setWarningLeads] = useState<Lead[]>([]);
-
-  // Warning Sound
-  const warningSound = useMemo(() => {
-    if (typeof Audio !== 'undefined') {
-      const audio = new Audio(WARNING_SOUND_B64);
-      audio.volume = 0.5; // Set volume to 50%
-      return audio;
-    }
-    return null;
-  }, []);
+  const [snoozedLeadIds, setSnoozedLeadIds] = useState<Record<string, number>>({});
+  
+  // Ref for the audio element
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Data Hooks
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
@@ -167,54 +160,90 @@ const App: React.FC = () => {
   // Effect to check for "Recently Added" leads older than 2 hours
   useEffect(() => {
     const checkLeads = () => {
-      const now = new Date();
-      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      const overdueLeads = leads.filter(lead => 
-        lead.status === LeadStatus.RecentlyAdded &&
-        lead.createdAt &&
-        new Date(lead.createdAt) < twoHoursAgo
-      );
+      const now = Date.now();
+      const twoHoursAgo = new Date(now - 2 * 60 * 60 * 1000);
+      
+      const activeSnoozedIds = Object.keys(snoozedLeadIds).filter(id => snoozedLeadIds[id] > now);
+
+      const overdueLeads = leads.filter(lead => {
+        const isOverdue = lead.status === LeadStatus.RecentlyAdded &&
+                          lead.createdAt &&
+                          new Date(lead.createdAt) < twoHoursAgo;
+        const isSnoozed = activeSnoozedIds.includes(lead.id);
+        return isOverdue && !isSnoozed;
+      });
 
       if (overdueLeads.length > 0) {
         setWarningLeads(overdueLeads);
-        if (!isWarningPopupVisible) {
-            setWarningPopupVisible(true);
-            if (warningSound) {
-                warningSound.play().catch(e => console.error("Audio play failed. User interaction may be required.", e));
-            }
-        }
+        setWarningPopupVisible(true);
       } else {
-        setWarningLeads([]);
-        setWarningPopupVisible(false);
+        if (isWarningPopupVisible) {
+          setWarningLeads([]);
+          setWarningPopupVisible(false);
+        }
       }
     };
 
-    // Check on initial load and then every 30 minutes
-    if (leads.length > 0) {
+    if (leadsLoaded) {
       checkLeads();
     }
-    const intervalId = setInterval(checkLeads, 30 * 60 * 1000); // 30 minutes
+    const intervalId = setInterval(checkLeads, 60 * 1000); // Check every minute
 
-    return () => clearInterval(intervalId);
-  }, [leads, isWarningPopupVisible, warningSound]);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [leads, leadsLoaded, snoozedLeadIds]);
 
-  // --- Handlers ---
-  const handleAddLead = () => {
-    setEditingLead(null);
-    setLeadFormVisible(true);
+  // Effect for playing/stopping warning sound
+  useEffect(() => {
+    if (isWarningPopupVisible) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(WARNING_SOUND_BASE64);
+        audioRef.current.loop = true;
+      }
+      audioRef.current.play().catch(error => {
+        console.warn("Audio autoplay was blocked by the browser. A user interaction is required to enable sound.", error);
+      });
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+    
+    // Cleanup function to stop audio when the component unmounts
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [isWarningPopupVisible]);
+
+  const handleCloseWarning = () => {
+    const now = Date.now();
+    const twoHoursFromNow = now + (2 * 60 * 60 * 1000);
+    const newSnoozes: Record<string, number> = {};
+    warningLeads.forEach(lead => {
+        newSnoozes[lead.id] = twoHoursFromNow;
+    });
+    
+    setSnoozedLeadIds(prev => ({...prev, ...newSnoozes}));
+    setWarningPopupVisible(false);
+    setWarningLeads([]);
   };
 
-  const handleEditLead = (lead: Lead) => {
-    setEditingLead(lead);
-    setLeadFormVisible(true);
+  const handleLogin = (userId: string) => {
+    setIsAuthenticated(true);
+    setCurrentUser(userNames[userId] || 'User');
   };
 
-  const handleCancelLeadForm = () => {
-    setLeadFormVisible(false);
-    setEditingLead(null);
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
   };
 
-  const handleSaveLead = async (lead: Lead) => {
+  const handleLeadSave = async (lead: Lead) => {
     try {
       if (editingLead) {
         await updateLead(lead);
@@ -223,87 +252,64 @@ const App: React.FC = () => {
         await addLead(lead);
         setSuccessMessage('Lead added successfully!');
       }
-      handleCancelLeadForm();
-    } catch (e: any) {
-      setErrorMessage(`Failed to save lead: ${e.message}`);
+      setLeadFormVisible(false);
+      setEditingLead(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to save lead: ${error.message}`);
     }
   };
-  
-  const handleDeleteLead = async (id: string) => {
-    try {
-        await deleteLead(id);
-        setSuccessMessage('Lead deleted successfully.');
-        handleCancelLeadForm();
-    } catch(e: any) {
-        setErrorMessage(`Failed to delete lead: ${e.message}`);
-    }
-  }
 
   const handleLeadStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     const leadToUpdate = leads.find(l => l.id === leadId);
     if (leadToUpdate) {
-      try {
-        if (newStatus === LeadStatus.SiteVisit && leadToUpdate) {
-            setLeadForVisit(leadToUpdate);
-            setVisitModalVisible(true);
-        } else {
+      if (newStatus === LeadStatus.SiteVisit && leadToUpdate.status !== LeadStatus.SiteVisit) {
+          setLeadForVisit(leadToUpdate);
+          setVisitModalVisible(true);
+      } else {
+        try {
             await updateLead({ ...leadToUpdate, status: newStatus });
             setSuccessMessage(`Lead status updated to ${formatStatus(newStatus)}.`);
+        } catch (error: any) {
+            setErrorMessage(`Failed to update lead status: ${error.message}`);
         }
-      } catch(e: any) {
-        setErrorMessage(`Failed to update lead status: ${e.message}`);
       }
     }
   };
 
-  const handleScheduleVisit = async (visitData: { date: string, time: string, location: string }) => {
+  const handleScheduleVisit = async (visitData: { date: string; time: string; location: string }) => {
     if (!leadForVisit) return;
     try {
-        const newVisit: SiteVisit = {
-            id: Date.now().toString(),
-            clientName: leadForVisit.name,
-            phone: leadForVisit.phone,
-            location: visitData.location,
-            date: visitData.date,
-            time: visitData.time,
-        };
-        await addVisit(newVisit);
-        // Also update the lead status
-        await updateLead({ ...leadForVisit, status: LeadStatus.SiteVisit });
-        setSuccessMessage('Site visit scheduled and lead status updated!');
-        setVisitModalVisible(false);
-        setLeadForVisit(null);
-    } catch(e: any) {
-        setErrorMessage(`Failed to schedule visit: ${e.message}`);
+      const newVisit: SiteVisit = {
+        id: Date.now().toString(),
+        clientName: leadForVisit.name,
+        phone: leadForVisit.phone,
+        location: visitData.location,
+        date: visitData.date,
+        time: visitData.time,
+      };
+      await addVisit(newVisit);
+      await updateLead({ ...leadForVisit, status: LeadStatus.SiteVisit });
+
+      setSuccessMessage('Site visit scheduled and lead status updated!');
+      setVisitModalVisible(false);
+      setLeadForVisit(null);
+    } catch (error: any) {
+      setErrorMessage(`Failed to schedule visit: ${error.message}`);
     }
   };
-
-  const handleLoginSuccess = (userId: string) => {
-    setIsAuthenticated(true);
-    setCurrentUser(userNames[userId] || 'User');
-    setSuccessMessage(`Welcome, ${userNames[userId]}!`);
-  };
   
-  const handleLogout = () => {
-      setIsAuthenticated(false);
-      setCurrentUser(null);
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLogin} />;
   }
 
   const renderView = () => {
-    switch(currentView) {
+    switch (currentView) {
       case 'leads':
-        return <LeadList leads={leads} onAdd={handleAddLead} onEdit={handleEditLead} onLeadStatusChange={handleLeadStatusChange} />;
+        return <LeadList leads={leads} onAdd={() => { setEditingLead(null); setLeadFormVisible(true); }} onEdit={(lead) => { setEditingLead(lead); setLeadFormVisible(true); }} onLeadStatusChange={handleLeadStatusChange} />;
       case 'quote':
         return <QuotePage />;
       case 'site-visits':
-        return <SiteVisitCalendar 
-          siteVisits={siteVisits} 
-          addVisit={addVisit}
-          updateVisit={updateVisit}
-          deleteVisit={deleteVisit}
-          setSuccessMessage={setSuccessMessage}
-          setErrorMessage={setErrorMessage}
-        />;
+        return <SiteVisitCalendar siteVisits={siteVisits} addVisit={addVisit} updateVisit={updateVisit} deleteVisit={deleteVisit} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'projects':
         return <ProjectTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'team':
@@ -313,118 +319,75 @@ const App: React.FC = () => {
       case 'lead-history':
         return <LeadHistory leads={leads} />;
       default:
-        return <LeadList leads={leads} onAdd={handleAddLead} onEdit={handleEditLead} onLeadStatusChange={handleLeadStatusChange} />;
+        return <div className="p-8">Select a view from the sidebar.</div>;
     }
-  }
-  
-  if (!isAuthenticated) {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
-  }
-  
-  return (
-    <div className="h-screen w-screen flex bg-neutral-100 overflow-hidden">
-      {/* Sidebar for desktop */}
-      <div className="hidden md:flex md:flex-shrink-0 h-full">
-        <Sidebar currentView={currentView} setCurrentView={setCurrentView} currentUser={currentUser} onLogout={handleLogout} />
-      </div>
+  };
 
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between bg-white shadow px-4 py-2 border-b border-neutral-200">
-            <button onClick={() => setSidebarOpen(true)} className="text-neutral-600">
-                <MenuIcon className="h-6 w-6"/>
-            </button>
-            <h1 className="text-lg font-bold text-neutral-800">{formatStatus(currentView)}</h1>
-            <button onClick={handleAddLead} className="p-2 rounded-full bg-primary-600 text-white shadow-md">
-                <PlusIcon className="h-5 w-5" />
-            </button>
-        </header>
-        
-        {/* Main Content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
-            {/* Header for Desktop */}
-            <div className="hidden md:block bg-white px-8 py-4 border-b border-neutral-200">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-2xl font-bold text-neutral-900">{getGreeting()}, {currentUser}!</h1>
-                  <p className="text-sm text-neutral-500">Here's what's happening today.</p>
-                </div>
-                {currentView === 'leads' && (
-                  <button onClick={handleAddLead} className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700">
-                    <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                    Add Lead
-                  </button>
-                )}
-              </div>
-            </div>
-            
-            {!leadsLoaded ? (
-              <div className="flex items-center justify-center h-full">
-                <LoadingSpinner className="h-10 w-10 text-primary-600" />
-              </div>
-            ) : leadsError ? (
-              <div className="p-8 text-center text-red-600">
-                  <XCircleIcon className="h-12 w-12 mx-auto" />
-                  <p className="mt-4 font-semibold">Error loading data</p>
-                  <p className="text-sm">{leadsError}</p>
-              </div>
-            ) : (
-                renderView()
-            )}
-        </main>
+  return (
+    <div className="flex h-screen bg-neutral-100 font-sans">
+      <div className={`fixed inset-y-0 left-0 z-40 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 md:flex-shrink-0 transition-transform duration-300 ease-in-out`}>
+        <Sidebar currentView={currentView} setCurrentView={(view) => { setCurrentView(view); setSidebarOpen(false); }} currentUser={currentUser} onLogout={handleLogout} />
       </div>
       
-      {/* Modals and Forms */}
-      {isLeadFormVisible && <LeadForm lead={editingLead} onSave={handleSaveLead} onCancel={handleCancelLeadForm} onDelete={handleDeleteLead} />}
-      {isVisitModalVisible && leadForVisit && <ScheduleVisitModal lead={leadForVisit} onSave={handleScheduleVisit} onCancel={() => setVisitModalVisible(false)}/>}
-      
-      {/* Global Notifications */}
-      {successMessage && (
-        <div className="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in-out z-[101]">
-          <CheckCircleIcon className="h-6 w-6"/>
-          <span>{successMessage}</span>
-        </div>
-      )}
-      {errorMessage && (
-        <div className="fixed top-5 right-5 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-fade-in-out z-[101]">
-          <XCircleIcon className="h-6 w-6"/>
-          <span>{errorMessage}</span>
-        </div>
-      )}
-      {isWarningPopupVisible && <WarningPopup leads={warningLeads} onClose={() => setWarningPopupVisible(false)} />}
-      
-      {/* Mobile Sidebar */}
-       {isSidebarOpen && (
-        <div className="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true" onClick={() => setSidebarOpen(false)}></div>
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-neutral-900">
-            <div className="absolute top-0 right-0 -mr-12 pt-2">
-              <button
-                type="button"
-                className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className="sr-only">Close sidebar</span>
-                <XIcon className="h-6 w-6 text-white" />
-              </button>
+      {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"></div>}
+
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="flex-shrink-0 bg-white border-b border-neutral-200 shadow-sm">
+            <div className="px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center">
+                    <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="md:hidden mr-3 text-neutral-600 hover:text-neutral-900">
+                        {isSidebarOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+                    </button>
+                    <div>
+                      <h1 className="text-lg font-semibold text-neutral-800">{getGreeting()}, {currentUser}!</h1>
+                      <p className="text-xs text-neutral-500">You are viewing: <span className="font-medium text-neutral-700">{formatStatus(currentView)}</span></p>
+                    </div>
+                </div>
+                 <button onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} className="hidden sm:inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    <PlusIcon className="mr-2 h-4 w-4" /> Add Lead
+                </button>
             </div>
-            <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <Sidebar 
-                currentView={currentView} 
-                setCurrentView={(view) => {
-                  setCurrentView(view);
-                  setSidebarOpen(false);
-                }} 
-                currentUser={currentUser} 
-                onLogout={() => {
-                  handleLogout();
-                  setSidebarOpen(false);
-                }}
-              />
-            </div>
+        </header>
+
+        {!leadsLoaded ? (
+          <div className="flex-grow flex items-center justify-center">
+            <LoadingSpinner className="h-8 w-8 text-primary-600"/>
           </div>
-          <div className="flex-shrink-0 w-14" aria-hidden="true"></div>
+        ) : leadsError ? (
+           <div className="flex-grow flex items-center justify-center p-4">
+             <div className="text-center bg-red-50 p-6 rounded-lg border border-red-200">
+                <XCircleIcon className="mx-auto h-12 w-12 text-red-400" />
+                <h3 className="mt-2 text-lg font-medium text-red-900">Failed to load data</h3>
+                <p className="mt-1 text-sm text-red-700">{leadsError}</p>
+             </div>
+           </div>
+        ) : (
+          <div className="flex-grow overflow-auto">
+            {renderView()}
+          </div>
+        )}
+      </main>
+
+      {isLeadFormVisible && <LeadForm lead={editingLead} onSave={handleLeadSave} onCancel={() => setLeadFormVisible(false)} onDelete={async (id) => { try { await deleteLead(id); setLeadFormVisible(false); setSuccessMessage('Lead deleted.'); } catch(e: any) { setErrorMessage(e.message) } }} />}
+      {isVisitModalVisible && leadForVisit && <ScheduleVisitModal lead={leadForVisit} onSave={handleScheduleVisit} onCancel={() => setVisitModalVisible(false)} />}
+      
+      {successMessage && (
+        <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-50">
+          <CheckCircleIcon className="h-5 w-5 mr-2" /> {successMessage}
         </div>
+      )}
+
+      {errorMessage && (
+        <div className="fixed bottom-5 right-5 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-50">
+          <XCircleIcon className="h-5 w-5 mr-2" /> {errorMessage}
+        </div>
+      )}
+
+      {isWarningPopupVisible && (
+        <WarningPopup
+          leads={warningLeads}
+          onClose={handleCloseWarning}
+        />
       )}
     </div>
   );

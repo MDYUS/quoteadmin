@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Lead } from '../types';
 import { XIcon, WarningIcon } from './icons';
