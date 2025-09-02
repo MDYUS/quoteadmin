@@ -59,8 +59,16 @@ export const useLeads = () => {
   }, [fetchLeads]);
 
   const deleteLead = useCallback(async (leadId: string) => {
-    const { error: dbError } = await supabase.from('leads').delete().eq('id', leadId);
-    if (dbError) throw new Error(dbError.message);
+    const { count, error: dbError } = await supabase.from('leads').delete({ count: 'exact' }).eq('id', leadId);
+    
+    if (dbError) {
+        throw new Error(dbError.message);
+    }
+
+    if (count === 0) {
+        throw new Error("Deletion failed. The lead might not exist or you may not have permission to delete it.");
+    }
+
     await fetchLeads();
   }, [fetchLeads]);
 

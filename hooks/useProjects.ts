@@ -56,8 +56,11 @@ export const useProjects = () => {
   }, [fetchProjects]);
 
   const deleteProject = useCallback(async (projectId: string) => {
-    const { error: dbError } = await supabase.from('projects').delete().eq('id', projectId);
+    const { count, error: dbError } = await supabase.from('projects').delete({ count: 'exact' }).eq('id', projectId);
     if (dbError) throw new Error(dbError.message);
+    if (count === 0) {
+        throw new Error("Deletion failed. The project might not exist or you may not have permission to delete it.");
+    }
     await fetchProjects();
   }, [fetchProjects]);
 

@@ -120,6 +120,7 @@ const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // State for the warning popup
   const [isWarningPopupVisible, setWarningPopupVisible] = useState(false);
@@ -368,17 +369,34 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {isLeadFormVisible && <LeadForm lead={editingLead} onSave={handleLeadSave} onCancel={() => setLeadFormVisible(false)} onDelete={async (id) => { try { await deleteLead(id); setLeadFormVisible(false); setSuccessMessage('Lead deleted.'); } catch(e: any) { setErrorMessage(e.message) } }} />}
+      {isLeadFormVisible && <LeadForm 
+          lead={editingLead} 
+          onSave={handleLeadSave} 
+          onCancel={() => setLeadFormVisible(false)} 
+          isDeleting={isDeleting}
+          onDelete={async (id) => { 
+            setIsDeleting(true);
+            try { 
+              await deleteLead(id); 
+              setLeadFormVisible(false); 
+              setSuccessMessage('Lead deleted.'); 
+            } catch(e: any) { 
+              setErrorMessage(e.message) 
+            } finally {
+              setIsDeleting(false);
+            }
+          }} 
+      />}
       {isVisitModalVisible && leadForVisit && <ScheduleVisitModal lead={leadForVisit} onSave={handleScheduleVisit} onCancel={() => setVisitModalVisible(false)} />}
       
       {successMessage && (
-        <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-50">
+        <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-[100]">
           <CheckCircleIcon className="h-5 w-5 mr-2" /> {successMessage}
         </div>
       )}
 
       {errorMessage && (
-        <div className="fixed bottom-5 right-5 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-50">
+        <div className="fixed bottom-5 right-5 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in-out z-[100]">
           <XCircleIcon className="h-5 w-5 mr-2" /> {errorMessage}
         </div>
       )}

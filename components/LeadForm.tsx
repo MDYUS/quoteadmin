@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadStatus, FileInfo } from '../types';
 import { STATUS_OPTIONS } from '../constants';
-import { XIcon, TrashIcon, DownloadIcon, FileIcon } from './icons';
+import { XIcon, TrashIcon, DownloadIcon, FileIcon, LoadingSpinner } from './icons';
 import { formatStatus } from '../utils';
 
 interface LeadFormProps {
@@ -10,9 +11,10 @@ interface LeadFormProps {
   onSave: (lead: Lead) => void;
   onCancel: () => void;
   onDelete: (id: string) => void;
+  isDeleting?: boolean;
 }
 
-const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete }) => {
+const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete, isDeleting }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [budget, setBudget] = useState('');
@@ -146,8 +148,16 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete })
         <div className="px-6 py-4 bg-neutral-50 rounded-b-xl flex justify-between items-center flex-shrink-0 border-t border-neutral-200">
             <div>
                 {lead && (
-                    <button onClick={handleDelete} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium transition-colors">
-                        <TrashIcon/> Delete Lead
+                    <button onClick={handleDelete} disabled={isDeleting} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-wait">
+                        {isDeleting ? (
+                            <>
+                                <LoadingSpinner className="animate-spin h-4 w-4 text-red-600" /> Deleting...
+                            </>
+                        ) : (
+                            <>
+                                <TrashIcon/> Delete Lead
+                            </>
+                        )}
                     </button>
                 )}
             </div>

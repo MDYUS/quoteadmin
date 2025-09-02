@@ -59,8 +59,11 @@ export const useSiteVisits = () => {
   }, [fetchVisits]);
 
   const deleteVisit = useCallback(async (visitId: string) => {
-    const { error: dbError } = await supabase.from('site_visits').delete().eq('id', visitId);
+    const { count, error: dbError } = await supabase.from('site_visits').delete({ count: 'exact' }).eq('id', visitId);
     if (dbError) throw new Error(dbError.message);
+    if (count === 0) {
+        throw new Error("Deletion failed. The visit might not exist or you may not have permission to delete it.");
+    }
     await fetchVisits();
   }, [fetchVisits]);
 

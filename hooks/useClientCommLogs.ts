@@ -56,8 +56,11 @@ export const useClientCommLogs = () => {
   }, [fetchLogs]);
 
   const deleteLog = useCallback(async (logId: string) => {
-    const { error: dbError } = await supabase.from('client_comm_logs').delete().eq('id', logId);
+    const { count, error: dbError } = await supabase.from('client_comm_logs').delete({ count: 'exact' }).eq('id', logId);
     if (dbError) throw new Error(dbError.message);
+    if (count === 0) {
+        throw new Error("Deletion failed. The log might not exist or you may not have permission to delete it.");
+    }
     await fetchLogs();
   }, [fetchLogs]);
 

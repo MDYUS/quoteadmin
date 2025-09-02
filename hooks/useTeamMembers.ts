@@ -57,8 +57,11 @@ export const useTeamMembers = () => {
   }, [fetchTeamMembers]);
 
   const deleteTeamMember = useCallback(async (memberId: string) => {
-    const { error: dbError } = await supabase.from('team_members').delete().eq('id', memberId);
+    const { count, error: dbError } = await supabase.from('team_members').delete({ count: 'exact' }).eq('id', memberId);
     if (dbError) throw new Error(dbError.message);
+    if (count === 0) {
+        throw new Error("Deletion failed. The team member might not exist or you may not have permission to delete it.");
+    }
     await fetchTeamMembers();
   }, [fetchTeamMembers]);
 
