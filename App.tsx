@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
@@ -94,7 +92,6 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
   );
 };
 
-
 type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
 
 const userNames: Record<string, string> = {
@@ -135,6 +132,7 @@ const App: React.FC = () => {
   // State for Push Notifications & PWA Installation
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   // Ref for the audio element
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -152,11 +150,18 @@ const App: React.FC = () => {
   const [isVisitModalVisible, setVisitModalVisible] = useState(false);
   const [leadForVisit, setLeadForVisit] = useState<Lead | null>(null);
 
-  // Effect to handle PWA installation prompt
+  // Effect to handle PWA installation prompt and show banner
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
         event.preventDefault();
-        setInstallPromptEvent(event);
+        const isDismissed = localStorage.getItem('installBannerDismissed') === 'true';
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+        // Only show banner if it's not dismissed and the app isn't already installed
+        if (!isDismissed && !isStandalone) {
+            setInstallPromptEvent(event);
+            setShowInstallBanner(true);
+        }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -350,21 +355,29 @@ const App: React.FC = () => {
     }
   };
   
-  // --- PWA & Push Notification Logic ---
-  const handleInstallClick = () => {
-    if (!installPromptEvent) {
-        return;
-    }
+  // --- PWA Installation Banner Logic ---
+  const handleInstallPrompt = () => {
+    if (!installPromptEvent) return;
+    
+    // Show the browser's installation prompt
     installPromptEvent.prompt();
+    
+    // Hide our banner immediately
+    setShowInstallBanner(false);
+    
     installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
-        if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-            setSuccessMessage('App installed successfully!');
-        } else {
-            console.log('User dismissed the install prompt');
-        }
-        setInstallPromptEvent(null);
+      if (choiceResult.outcome === 'accepted') {
+        setSuccessMessage('App installed successfully!');
+      }
+      // The prompt can only be used once; clear it.
+      setInstallPromptEvent(null);
     });
+  };
+
+  const handleDismissInstallBanner = () => {
+    // Remember the user's choice not to install
+    localStorage.setItem('installBannerDismissed', 'true');
+    setShowInstallBanner(false);
   };
 
   // Helper function to convert VAPID key
@@ -424,7 +437,6 @@ const App: React.FC = () => {
       });
   };
 
-
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLogin} />;
   }
@@ -470,27 +482,22 @@ const App: React.FC = () => {
                       <p className="text-xs text-neutral-500">You are viewing: <span className="font-medium text-neutral-700">{formatStatus(currentView)}</span></p>
                     </div>
                 </div>
-                 <div className="flex items-center gap-3">
-                    {installPromptEvent && (
-                      <button 
-                        onClick={handleInstallClick}
-                        title="Install App"
-                        className="hidden sm:inline-flex items-center p-2 border border-primary-500 bg-primary-50 rounded-md text-primary-700 hover:bg-primary-100 transition-colors"
-                      >
-                        <DownloadIcon className="h-5 w-5" />
-                      </button>
-                    )}
+                 <div className="flex items-center gap-2">
                     {notificationPermission !== 'granted' && 'serviceWorker' in navigator && 'PushManager' in window && (
                       <button 
                         onClick={handleEnableNotifications}
                         title="Enable Notifications"
-                        className="hidden sm:inline-flex items-center p-2 border border-neutral-300 rounded-md text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        className="inline-flex items-center p-2 border border-neutral-300 rounded-md text-neutral-600 hover:bg-neutral-100 transition-colors"
                       >
                         <BellIcon className="h-5 w-5" />
                       </button>
                     )}
-                    <button onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} className="hidden sm:inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-                        <PlusIcon className="mr-2 h-4 w-4" /> Add Lead
+                    <button 
+                      onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} 
+                      title="Add New Lead"
+                      className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                        <PlusIcon className="h-5 w-5 sm:mr-2" />
+                        <span className="hidden sm:inline">Add Lead</span>
                     </button>
                  </div>
             </div>
@@ -563,6 +570,29 @@ const App: React.FC = () => {
           leads={warningLeads}
           onClose={handleCloseWarning}
         />
+      )}
+
+      {showInstallBanner && (
+        <div className="fixed bottom-0 left-0 right-0 bg-primary-900 text-white p-4 shadow-lg z-[100] animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+            <div className="flex items-center gap-4">
+                <DownloadIcon className="h-10 w-10 flex-shrink-0 hidden sm:block" />
+                <div>
+                    <p className="font-bold">Install the Amaz CRM App</p>
+                    <p className="text-sm text-primary-200">Add to your home screen for quick and easy access.</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0 mt-3 sm:mt-0">
+                <button 
+                    onClick={handleInstallPrompt}
+                    className="px-5 py-2 bg-white text-primary-800 border border-transparent rounded-lg text-sm font-semibold hover:bg-primary-100 transition-colors"
+                >
+                    Install
+                </button>
+                <button onClick={handleDismissInstallBanner} className="p-2 text-primary-200 hover:text-white rounded-full hover:bg-white/10" aria-label="Dismiss">
+                    <XIcon className="h-6 w-6" />
+                </button>
+            </div>
+        </div>
       )}
     </div>
   );
