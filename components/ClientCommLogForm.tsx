@@ -176,7 +176,8 @@ const MultiFileInput = ({ id, files, setFiles, removeFile, label, accept }: { id
           <input id={id} type="file" multiple accept={accept} onChange={(e) => {
               const selectedFiles = e.target.files;
               if (selectedFiles && selectedFiles.length > 0) {
-                  const filePromises = Array.from(selectedFiles).map(f =>
+// FIX: Explicitly type `f` as `File` to help TypeScript's type inference.
+                  const filePromises = Array.from(selectedFiles).map((f: File) =>
                       new Promise<FileInfo>(resolve => {
                           const reader = new FileReader();
                           reader.onloadend = () => resolve({ name: f.name, dataUrl: reader.result as string, type: f.type });

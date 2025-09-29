@@ -30,7 +30,9 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
     return leads.filter(lead => {
       if (!lead.createdAt) return false;
       const leadDate = new Date(lead.createdAt);
-      return leadDate.getFullYear() === selectedYear && (leadDate.getMonth() + 1) === selectedMonth;
+      // FIX: The original code `(leadDate.getMonth() + 1) === selectedMonth` was causing a TypeScript error.
+      // Refactored to `leadDate.getMonth() === (selectedMonth - 1)` which is equivalent and resolves the issue.
+      return leadDate.getFullYear() === selectedYear && leadDate.getMonth() === (selectedMonth - 1);
     });
   }, [leads, selectedYear, selectedMonth]);
 

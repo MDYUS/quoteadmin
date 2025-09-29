@@ -127,6 +127,11 @@ const App: React.FC = () => {
   const [warningLeads, setWarningLeads] = useState<Lead[]>([]);
   const [snoozedLeadIds, setSnoozedLeadIds] = useState<Record<string, number>>({});
   
+  // State for month-end notification
+  const [isMonthEndNotificationVisible, setIsMonthEndNotificationVisible] = useState(false);
+  const [isMonthEndNotificationDismissed, setIsMonthEndNotificationDismissed] = useState(false);
+  const [monthlyLeadCount, setMonthlyLeadCount] = useState(0);
+
   // Ref for the audio element
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -194,6 +199,34 @@ const App: React.FC = () => {
       clearInterval(intervalId);
     };
   }, [leads, leadsLoaded, snoozedLeadIds]);
+
+  // Effect to handle the month-end notification
+  useEffect(() => {
+    const today = new Date();
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const currentDay = today.getDate();
+
+    // Show on the last two days of the month
+    const shouldShow = currentDay === lastDayOfMonth || currentDay === lastDayOfMonth - 1;
+
+    if (shouldShow) {
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+
+      const count = leads.filter(lead => {
+        if (!lead.createdAt) return false;
+        const leadDate = new Date(lead.createdAt);
+        return leadDate.getMonth() === currentMonth && leadDate.getFullYear() === currentYear;
+      }).length;
+      
+      setMonthlyLeadCount(count);
+      setIsMonthEndNotificationVisible(true);
+    } else {
+      setIsMonthEndNotificationVisible(false);
+      setIsMonthEndNotificationDismissed(false); // Reset for next month
+    }
+  }, [leads]);
+
 
   // Effect for playing/stopping warning sound
   useEffect(() => {
@@ -349,6 +382,17 @@ const App: React.FC = () => {
                 </button>
             </div>
         </header>
+
+        {isMonthEndNotificationVisible && !isMonthEndNotificationDismissed && (
+          <div className="flex-shrink-0">
+            <div className="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 m-4 rounded-md shadow flex justify-between items-center animate-fade-in">
+              <p>This Month's Total Leads: <span className="font-bold text-lg">{monthlyLeadCount}</span></p>
+              <button onClick={() => setIsMonthEndNotificationDismissed(true)} className="text-green-600 hover:text-green-800">
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {!leadsLoaded ? (
           <div className="flex-grow flex items-center justify-center">
