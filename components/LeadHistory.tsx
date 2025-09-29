@@ -23,16 +23,17 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
     if (!years.has(new Date().getFullYear())) {
         years.add(new Date().getFullYear());
     }
-    return Array.from(years).sort((a, b) => b - a);
+    // FIX: Add explicit number types to the sort callback parameters to ensure correct type inference.
+    return Array.from(years).sort((a: number, b: number) => b - a);
   }, [leads]);
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
       if (!lead.createdAt) return false;
       const leadDate = new Date(lead.createdAt);
-      // FIX: The original code `(leadDate.getMonth() + 1) === selectedMonth` was causing a TypeScript error.
-      // Refactored to `leadDate.getMonth() === (selectedMonth - 1)` which is equivalent and resolves the issue.
-      return leadDate.getFullYear() === selectedYear && leadDate.getMonth() === (selectedMonth - 1);
+      // Note: The month from `getMonth()` is 0-indexed (0-11), while `selectedMonth` is 1-indexed (1-12).
+      // We adjust the month from the lead's date by adding 1 for a correct comparison.
+      return leadDate.getFullYear() === selectedYear && (leadDate.getMonth() + 1) === selectedMonth;
     });
   }, [leads, selectedYear, selectedMonth]);
 

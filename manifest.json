@@ -1,0 +1,22 @@
+{
+  "short_name": "Amaz CRM",
+  "name": "Amaz Interior - CRM",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMwIiBmaWxsPSIjMWUzYThhIi8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTk2IDQwbC00MCA0MEg3MnY2MGg0OFY4MGgxNnoiLz48cmVjdCB4PSI0OCIgeT0iMTQ1IiB3aWR0aD0iOTYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmYiLz48L3N2Zz4=",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjgwIiBmaWxsPSIjMWUzYThhIi8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTI1NiAxMDhsLTEwNyAxMDdoNDN2MTYwaDg4di0xNjBoNDN6Ii8+PHJlY3QgeD0iMTI4IiB5PSIzODciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjciIGZpbGw9IiNmZmYiLz48L3N2Zz4=",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1e3a8a",
+  "background_color": "#f1f5f9",
+  "scope": "/"
+}

@@ -12,7 +12,7 @@ import TeamMemberTracker from './components/TeamMemberTracker';
 import ClientCommLogTracker from './components/ClientCommLogTracker';
 import LeadHistory from './components/LeadHistory';
 import { Lead, LeadStatus, SiteVisit } from './types';
-import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon } from './components/icons';
+import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, DownloadIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
@@ -132,6 +132,10 @@ const App: React.FC = () => {
   const [isMonthEndNotificationDismissed, setIsMonthEndNotificationDismissed] = useState(false);
   const [monthlyLeadCount, setMonthlyLeadCount] = useState(0);
 
+  // State for Push Notifications & PWA Installation
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
+
   // Ref for the audio element
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -147,6 +151,20 @@ const App: React.FC = () => {
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [isVisitModalVisible, setVisitModalVisible] = useState(false);
   const [leadForVisit, setLeadForVisit] = useState<Lead | null>(null);
+
+  // Effect to handle PWA installation prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+        event.preventDefault();
+        setInstallPromptEvent(event);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   // Effect to show success/error messages
   useEffect(() => {
@@ -332,6 +350,81 @@ const App: React.FC = () => {
     }
   };
   
+  // --- PWA & Push Notification Logic ---
+  const handleInstallClick = () => {
+    if (!installPromptEvent) {
+        return;
+    }
+    installPromptEvent.prompt();
+    installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+            setSuccessMessage('App installed successfully!');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+        setInstallPromptEvent(null);
+    });
+  };
+
+  // Helper function to convert VAPID key
+  const urlBase64ToUint8Array = (base64String: string) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+  };
+
+  const subscribeToNotifications = async () => {
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+          try {
+              const registration = await navigator.serviceWorker.ready;
+              const vapidPublicKey = 'BNo5Yg83L2s0EwQfENfVaxnL-Pn5oSA3_s4fLgW_3DB-Nbrf0yIsyvWe_F2fBvA_z4yqWJdZ4fn722aezjF9nB4';
+
+              const subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+              });
+              
+              console.log('User is subscribed:', subscription);
+              // TODO: Send this 'subscription' object to your backend server.
+              setSuccessMessage('Notifications enabled!');
+              setNotificationPermission('granted');
+
+          } catch (error) {
+              console.error('Failed to subscribe the user: ', error);
+              setErrorMessage('Failed to enable notifications.');
+              setNotificationPermission('denied');
+          }
+      }
+  };
+
+  const handleEnableNotifications = () => {
+      if (notificationPermission === 'granted') {
+          setSuccessMessage('Notifications are already enabled.');
+          return;
+      }
+      
+      if (notificationPermission === 'denied') {
+          setErrorMessage('Permission denied. Please enable notifications in browser settings.');
+          return;
+      }
+
+      Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission);
+          if (permission === 'granted') {
+              subscribeToNotifications();
+          } else {
+              setErrorMessage('Notification permission was not granted.');
+          }
+      });
+  };
+
+
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLogin} />;
   }
@@ -377,9 +470,29 @@ const App: React.FC = () => {
                       <p className="text-xs text-neutral-500">You are viewing: <span className="font-medium text-neutral-700">{formatStatus(currentView)}</span></p>
                     </div>
                 </div>
-                 <button onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} className="hidden sm:inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-                    <PlusIcon className="mr-2 h-4 w-4" /> Add Lead
-                </button>
+                 <div className="flex items-center gap-3">
+                    {installPromptEvent && (
+                      <button 
+                        onClick={handleInstallClick}
+                        title="Install App"
+                        className="hidden sm:inline-flex items-center p-2 border border-primary-500 bg-primary-50 rounded-md text-primary-700 hover:bg-primary-100 transition-colors"
+                      >
+                        <DownloadIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    {notificationPermission !== 'granted' && 'serviceWorker' in navigator && 'PushManager' in window && (
+                      <button 
+                        onClick={handleEnableNotifications}
+                        title="Enable Notifications"
+                        className="hidden sm:inline-flex items-center p-2 border border-neutral-300 rounded-md text-neutral-600 hover:bg-neutral-100 transition-colors"
+                      >
+                        <BellIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    <button onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} className="hidden sm:inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                        <PlusIcon className="mr-2 h-4 w-4" /> Add Lead
+                    </button>
+                 </div>
             </div>
         </header>
 
