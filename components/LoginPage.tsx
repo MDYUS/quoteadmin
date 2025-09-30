@@ -108,9 +108,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </div>
           </form>
         </div>
-        <footer className="text-center text-xs text-neutral-500 mt-8">
-            <p>Powered by AMAZ</p>
-        </footer>
       </div>
     </div>
   );

@@ -41,9 +41,6 @@ const MaintenancePage: React.FC = () => {
                     The service will be back online shortly. Thank you for your patience.
                 </p>
             </div>
-             <footer className="text-center text-xs text-neutral-500 mt-8">
-                <p>Powered by AMAZ</p>
-            </footer>
         </div>
     );
 };

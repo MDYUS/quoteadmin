@@ -120,10 +120,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             <span className="ml-3">Logout</span>
         </button>
       </div>
-
-      <div className="p-4 text-center text-xs text-neutral-500 border-t border-neutral-800">
-        <p>Powered by AMAZ</p>
-      </div>
     </aside>
   );
 };
