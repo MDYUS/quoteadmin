@@ -7,17 +7,47 @@ import QuotePage from './components/QuotePage';
 import SiteVisitCalendar from './components/SiteVisitCalendar';
 import ProjectTracker from './components/ProjectTracker';
 import TeamMemberTracker from './components/TeamMemberTracker';
-import ClientCommLogTracker from './components/ClientCommLogTracker';
+import PaymentsPage from './components/PaymentsPage';
 import LeadHistory from './components/LeadHistory';
-import { Lead, LeadStatus, SiteVisit } from './types';
-import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, DownloadIcon } from './components/icons';
+import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus } from './types';
+import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, DownloadIcon, WarningIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
-import { useClientCommLogs } from './hooks/useClientCommLogs';
+import { usePayments } from './hooks/usePayments';
 import LoginPage from './components/LoginPage';
 import { formatStatus } from './utils';
 import WarningPopup from './components/WarningPopup';
+import PaymentOverduePopup from './components/PaymentOverduePopup';
+
+// --- Maintenance Mode ---
+const MAINTENANCE_MODE = true;
+
+const MaintenancePage: React.FC = () => {
+    return (
+        <div className="min-h-screen bg-neutral-100 flex flex-col justify-center items-center p-4 font-sans text-center">
+            <div className="w-full max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-neutral-200">
+                <img 
+                    src="https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png" 
+                    alt="Amaz Interior Logo" 
+                    className="h-24 w-24 object-contain mx-auto mb-6"
+                />
+                <h1 className="text-3xl font-bold text-neutral-800">
+                    Service Temporary Hold
+                </h1>
+                <p className="mt-4 text-neutral-600">
+                    We are performing essential maintenance on our systems. We apologize for any inconvenience.
+                    <br />
+                    The service will be back online shortly. Thank you for your patience.
+                </p>
+            </div>
+             <footer className="text-center text-xs text-neutral-500 mt-8">
+                <p>Powered by AMAZ</p>
+            </footer>
+        </div>
+    );
+};
+
 
 // --- ScheduleVisitModal Component Definition ---
 interface ScheduleVisitModalProps {
@@ -92,7 +122,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
   );
 };
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history';
 
 const userNames: Record<string, string> = {
   '786786': 'Yusuf',
@@ -110,6 +140,10 @@ const getGreeting = () => {
 const WARNING_SOUND_BASE64 = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVEwT19LALsCFgCFAR2/tS/9/f7e/Yf/c/wZ/4X/9f6d/pv+Jf8r/4D/SP/T/rf/Ev9t/6YBGRsQ/7f+s/9t/9n/wP/MAHkBPwEAASEENwR1BkcGwgfJCAsJ0Qo/DEcNKg+yEFsS1xQJFRgXRBdaGD8ZehpJG8Adwh4BHwogHiEnIiwwJjAuMDYyNDU1NkE4Rjw/QUNDREhFR0lKTE1PTVBRUlNUVFVXV1hZWltcXV5gX2Zjam5xdXt/gIKDiIaLi4+PkZKTlZeYmZucnZ6foaKjpKanqKqsra6vsLGztLa4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NjZ2tvj4+Xm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1VWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==';
 
 const App: React.FC = () => {
+  if (MAINTENANCE_MODE) {
+    return <MaintenancePage />;
+  }
+  
   // Main App State
   const [currentView, setCurrentView] = useState<View>('leads');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -117,6 +151,7 @@ const App: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // State for the warning popup
@@ -128,6 +163,12 @@ const App: React.FC = () => {
   const [isMonthEndNotificationVisible, setIsMonthEndNotificationVisible] = useState(false);
   const [isMonthEndNotificationDismissed, setIsMonthEndNotificationDismissed] = useState(false);
   const [monthlyLeadCount, setMonthlyLeadCount] = useState(0);
+
+  // State for Payment Notifications
+  const [isOverduePopupVisible, setOverduePopupVisible] = useState(false);
+  const [overduePayment, setOverduePayment] = useState<Payment | null>(null);
+  const [isWeeklyNoticeVisible, setWeeklyNoticeVisible] = useState(false);
+  const [dueWeeklyPayment, setDueWeeklyPayment] = useState<Payment | null>(null);
 
   // State for Push Notifications & PWA Installation
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
@@ -142,7 +183,7 @@ const App: React.FC = () => {
   const { siteVisits, addVisit, updateVisit, deleteVisit } = useSiteVisits();
   const { projects, addProject, updateProject, deleteProject } = useProjects();
   const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember } = useTeamMembers();
-  const { logs: clientLogs, addLog: addClientLog, updateLog: updateClientLog, deleteLog: deleteClientLog } = useClientCommLogs();
+  const { payments } = usePayments();
 
   // Modal/Form State
   const [isLeadFormVisible, setLeadFormVisible] = useState(false);
@@ -277,6 +318,50 @@ const App: React.FC = () => {
     };
   }, [isWarningPopupVisible]);
 
+    // Effect for checking payment statuses
+  useEffect(() => {
+    if (!payments.length || !isAuthenticated) return;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // --- Check for overdue DM Service payment ---
+    const lastDismissal = localStorage.getItem('paymentPopupDismissedUntil');
+    if (lastDismissal && today.getTime() < parseInt(lastDismissal, 10)) {
+        // Still within dismissal period, do nothing.
+    } else if (now.getDate() > 10) {
+        const overdue = payments.find(p => 
+            p.paymentType === PaymentType.DMService &&
+            p.status === PaymentStatus.Pending &&
+            new Date(p.dueDate).getMonth() === now.getMonth() &&
+            new Date(p.dueDate).getFullYear() === now.getFullYear()
+        );
+        if (overdue) {
+            setOverduePayment(overdue);
+            setOverduePopupVisible(true);
+            return; // Prioritize the blocking popup
+        }
+    }
+
+    // --- Check for upcoming weekly payment ---
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const dueSoon = payments.find(p => 
+        p.paymentType === PaymentType.WeeklyBudget &&
+        p.status === PaymentStatus.Pending &&
+        new Date(p.dueDate).getTime() === tomorrow.getTime()
+    );
+
+    if (dueSoon) {
+        setDueWeeklyPayment(dueSoon);
+        setWeeklyNoticeVisible(true);
+    } else {
+        setWeeklyNoticeVisible(false);
+    }
+
+  }, [payments, isAuthenticated]);
+
+
   const handleCloseWarning = () => {
     const now = Date.now();
     const twoHoursFromNow = now + (2 * 60 * 60 * 1000);
@@ -293,11 +378,13 @@ const App: React.FC = () => {
   const handleLogin = (userId: string) => {
     setIsAuthenticated(true);
     setCurrentUser(userNames[userId] || 'User');
+    setCurrentUserId(userId);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
+    setCurrentUserId(null);
   };
 
   const handleLeadSave = async (lead: Lead) => {
@@ -355,6 +442,23 @@ const App: React.FC = () => {
     }
   };
   
+    const handleOverdueAcknowledge = (duration: 'today' | 'tomorrow') => {
+        const now = new Date();
+        const dismissUntil = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (duration === 'tomorrow') {
+            // Dismiss until the start of the day after tomorrow (so it won't show up tomorrow)
+            dismissUntil.setDate(dismissUntil.getDate() + 2); 
+        } else { // 'today'
+            // Dismiss for 24 hours from now
+            dismissUntil.setTime(now.getTime() + 24 * 60 * 60 * 1000);
+        }
+
+        localStorage.setItem('paymentPopupDismissedUntil', dismissUntil.getTime().toString());
+        setOverduePopupVisible(false);
+    };
+
+
   // --- PWA Installation Banner Logic ---
   const handleInstallPrompt = () => {
     if (!installPromptEvent) return;
@@ -453,8 +557,8 @@ const App: React.FC = () => {
         return <ProjectTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'team':
         return <TeamMemberTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
-      case 'client-comm-log':
-        return <ClientCommLogTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
+      case 'payments':
+        return <PaymentsPage currentUserId={currentUserId} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'lead-history':
         return <LeadHistory leads={leads} />;
       default:
@@ -513,6 +617,22 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+        
+        {isWeeklyNoticeVisible && dueWeeklyPayment && (
+            <div className="flex-shrink-0">
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 m-4 rounded-md shadow flex justify-between items-center animate-fade-in">
+                    <div className="flex items-center gap-3">
+                        <WarningIcon className="h-6 w-6" />
+                        <p>
+                            A payment of <span className="font-bold">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(dueWeeklyPayment.amount)}</span> for <span className="font-bold">{dueWeeklyPayment.description}</span> is due tomorrow.
+                        </p>
+                    </div>
+                    <button onClick={() => setWeeklyNoticeVisible(false)} className="text-yellow-600 hover:text-yellow-800">
+                        <XIcon className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+        )}
 
         {!leadsLoaded ? (
           <div className="flex-grow flex items-center justify-center">
@@ -532,6 +652,8 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      {isOverduePopupVisible && <PaymentOverduePopup onAcknowledge={handleOverdueAcknowledge} />}
 
       {isLeadFormVisible && <LeadForm 
           lead={editingLead} 

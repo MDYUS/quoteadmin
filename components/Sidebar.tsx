@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, ChatBubbleIcon, LogoutIcon, DatabaseIcon } from './icons';
+import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, CreditCardIcon, LogoutIcon, DatabaseIcon } from './icons';
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'client-comm-log' | 'lead-history';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history';
 
 interface SidebarProps {
   currentView: View;
@@ -90,11 +89,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             label="Team Members"
           />
            <NavItem 
-            view="client-comm-log"
+            view="payments"
             currentView={currentView}
             setCurrentView={setCurrentView}
-            icon={<ChatBubbleIcon className="w-6 h-6" />}
-            label="Client Communication Log"
+            icon={<CreditCardIcon className="w-6 h-6" />}
+            label="Payments"
           />
           <NavItem 
             view="lead-history"

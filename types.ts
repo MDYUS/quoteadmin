@@ -1,4 +1,3 @@
-
 export enum LeadStatus {
   RecentlyAdded = 'recently_added',
   Contacted = 'contacted',
@@ -100,7 +99,29 @@ export interface TeamMember {
   projectsDoneThisMonth: number;
 }
 
-// Types for Client Communication Log
+// Types for Payments
+export enum PaymentType {
+  WeeklyBudget = 'weekly_budget',
+  DMService = 'dm_service',
+}
+
+export enum PaymentStatus {
+  Pending = 'pending',
+  Paid = 'paid',
+}
+
+export interface Payment {
+  id: string;
+  paymentType: PaymentType;
+  amount: number;
+  dueDate: string; // YYYY-MM-DD
+  status: PaymentStatus;
+  paidOn: string | null;
+  description: string;
+  createdAt?: string;
+}
+
+// FIX: Add the missing ClientCommLog interface to resolve import errors.
 export interface ClientCommLog {
   id: string;
   clientName: string;
@@ -110,4 +131,5 @@ export interface ClientCommLog {
   quote: FileInfo | null;
   commImages: FileInfo[];
   otherDocs: FileInfo[];
+  createdAt?: string;
 }
