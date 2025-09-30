@@ -114,10 +114,30 @@ const QuotePage: FC = () => {
       doc.setTextColor(0, 0, 0);
 
       // Centered Header
-      const logoSize = 30;
-      const logoX = (pageWidth - logoSize) / 2;
-      doc.addImage(logoBase64, 'PNG', logoX, yPos - 10, logoSize, logoSize);
-      yPos += logoSize;
+      const addLogo = () => new Promise<number>((resolve) => {
+        const img = new Image();
+        img.src = logoBase64;
+        img.onload = () => {
+          const imgWidth = img.width;
+          const imgHeight = img.height;
+          const aspectRatio = imgWidth / imgHeight;
+          
+          const logoWidth = 30;
+          const logoHeight = logoWidth / aspectRatio;
+          const logoX = (pageWidth - logoWidth) / 2;
+          const logoY = yPos - 10;
+          
+          doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+          resolve(logoY + logoHeight + 10); // new y position for title
+        };
+        img.onerror = () => {
+          console.error("Failed to load logo for PDF generation.");
+          resolve(yPos + 30); // Fallback y position
+        };
+      });
+
+      yPos = await addLogo();
+
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);

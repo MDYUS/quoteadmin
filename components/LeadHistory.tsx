@@ -1,9 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { Lead } from '../types';
-import { DatabaseIcon } from './icons';
+import { DatabaseIcon, DownloadIcon } from './icons';
 import StatusBadge from './StatusBadge';
-import { formatStatus } from '../utils';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface LeadHistoryProps {
   leads: Lead[];
@@ -14,9 +14,14 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const LOGO_URL = 'https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png';
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+
 const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
   const availableYears = useMemo(() => {
     const years = new Set(leads.map(lead => lead.createdAt ? new Date(lead.createdAt).getFullYear() : null).filter((y): y is number => y !== null));
@@ -36,6 +41,89 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
       return leadDate.getFullYear() === selectedYear && (leadDate.getMonth() + 1) === selectedMonth;
     });
   }, [leads, selectedYear, selectedMonth]);
+
+  const handleGeneratePDF = async () => {
+    if (filteredLeads.length === 0) return;
+    setIsDownloading(true);
+
+    try {
+      const response = await fetch(`${CORS_PROXY}${encodeURIComponent(LOGO_URL)}`);
+      if (!response.ok) throw new Error('Logo fetch failed');
+      const blob = await response.blob();
+      const logoBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      const doc = new jsPDF();
+      const monthName = MONTHS[selectedMonth - 1];
+      const year = selectedYear;
+      const totalLeads = filteredLeads.length;
+
+      const addLogo = () => new Promise<number>((resolve) => {
+        const img = new Image();
+        img.src = logoBase64;
+        img.onload = () => {
+          const imgWidth = img.width;
+          const imgHeight = img.height;
+          const aspectRatio = imgWidth / imgHeight;
+
+          const logoWidth = 30;
+          const logoHeight = logoWidth / aspectRatio;
+          
+          const yPos = 15;
+          doc.addImage(logoBase64, 'PNG', 14, yPos, logoWidth, logoHeight);
+          resolve(yPos + logoHeight + 5); // new y position
+        };
+        img.onerror = () => {
+            console.error("Failed to load logo for PDF generation.");
+            resolve(50); // Fallback y position
+        };
+      });
+
+      let yPos = await addLogo();
+
+      // Title
+      doc.setFontSize(18);
+      doc.text(`Lead Report: ${monthName} ${year}`, 14, yPos);
+      yPos += 8;
+
+      // Subtitle
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`Total Leads This Month: ${totalLeads}`, 14, yPos);
+      yPos += 10;
+
+      // Table (Status column removed)
+      const head = [['S.No', 'Name', 'Phone', 'Scope', 'Added On']];
+      const body = filteredLeads.map((lead, index) => [
+        index + 1,
+        lead.name,
+        lead.phone,
+        lead.scope || 'N/A',
+        lead.createdAt ? new Date(lead.createdAt).toLocaleDateString('en-GB') : 'N/A'
+      ]);
+
+      autoTable(doc, {
+        startY: yPos,
+        head: head,
+        body: body,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 58, 138] }, // primary-900 color
+        styles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 10 } },
+      });
+
+      doc.save(`Lead_Report_${monthName}_${year}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      alert("Could not generate PDF. Please check your internet connection and try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 text-neutral-900 bg-neutral-100 h-full flex flex-col">
@@ -59,9 +147,19 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
             {MONTHS.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}
           </select>
         </div>
-        <div className="sm:ml-auto text-center sm:text-right">
-            <p className="font-bold text-xl text-neutral-800">{filteredLeads.length} Leads</p>
-            <p className="text-sm text-neutral-700">in {MONTHS[selectedMonth - 1]} {selectedYear}</p>
+        <div className="sm:ml-auto flex flex-col sm:flex-row items-center gap-4">
+            <div className="text-center sm:text-right">
+                <p className="font-bold text-xl text-neutral-800">{filteredLeads.length} Leads</p>
+                <p className="text-sm text-neutral-700">in {MONTHS[selectedMonth - 1]} {selectedYear}</p>
+            </div>
+            <button
+                onClick={handleGeneratePDF}
+                disabled={isDownloading || filteredLeads.length === 0}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+              >
+                <DownloadIcon className="h-5 w-5 mr-2" />
+                {isDownloading ? 'Downloading...' : 'Download PDF'}
+            </button>
         </div>
       </div>
 
