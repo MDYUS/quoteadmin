@@ -20,32 +20,6 @@ import { formatStatus } from './utils';
 import WarningPopup from './components/WarningPopup';
 import PaymentOverduePopup from './components/PaymentOverduePopup';
 
-// --- Maintenance Mode ---
-const MAINTENANCE_MODE = true;
-
-const MaintenancePage: React.FC = () => {
-    return (
-        <div className="min-h-screen bg-neutral-100 flex flex-col justify-center items-center p-4 font-sans text-center">
-            <div className="w-full max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-neutral-200">
-                <img 
-                    src="https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png" 
-                    alt="Amaz Interior Logo" 
-                    className="h-24 w-24 object-contain mx-auto mb-6"
-                />
-                <h1 className="text-3xl font-bold text-neutral-800">
-                    Service Temporary Hold
-                </h1>
-                <p className="mt-4 text-neutral-600">
-                    We are performing essential maintenance on our systems. We apologize for any inconvenience.
-                    <br />
-                    The service will be back online shortly. Thank you for your patience.
-                </p>
-            </div>
-        </div>
-    );
-};
-
-
 // --- ScheduleVisitModal Component Definition ---
 interface ScheduleVisitModalProps {
   lead: Lead;
@@ -137,10 +111,6 @@ const getGreeting = () => {
 const WARNING_SOUND_BASE64 = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVEwT19LALsCFgCFAR2/tS/9/f7e/Yf/c/wZ/4X/9f6d/pv+Jf8r/4D/SP/T/rf/Ev9t/6YBGRsQ/7f+s/9t/9n/wP/MAHkBPwEAASEENwR1BkcGwgfJCAsJ0Qo/DEcNKg+yEFsS1xQJFRgXRBdaGD8ZehpJG8Adwh4BHwogHiEnIiwwJjAuMDYyNDU1NkE4Rjw/QUNDREhFR0lKTE1PTVBRUlNUVFVXV1hZWltcXV5gX2Zjam5xdXt/gIKDiIaLi4+PkZKTlZeYmZucnZ6foaKjpKanqKqsra6vsLGztLa4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NjZ2tvj4+Xm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1VWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==';
 
 const App: React.FC = () => {
-  if (MAINTENANCE_MODE) {
-    return <MaintenancePage />;
-  }
-  
   // Main App State
   const [currentView, setCurrentView] = useState<View>('leads');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
