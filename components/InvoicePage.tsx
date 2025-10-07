@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Invoice, InvoiceItem } from '../types';
 import { defaultInvoiceData } from './invoiceDefaults';
-import { numberToWordsInLakhs } from '../utils';
+import { numberToWordsInLakhs, imageUrlToBase64, getImageDimensions } from '../utils';
 import { PlusIcon, TrashIcon, DownloadIcon, CheckCircleIcon } from './icons';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { LOGO_URL } from '../constants';
-import { imageUrlToBase64 } from '../utils';
 
 interface InvoicePageProps {
   invoiceToEdit: Invoice | null;
@@ -66,6 +65,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
       const doc = new jsPDF();
       const margin = 10;
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       let yPos = margin + 5;
 
       try {
@@ -79,11 +79,17 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
         doc.text('ORIGINAL FOR RECIPIENT', pageWidth - margin, yPos, { align: 'right' });
         yPos += 10;
         
-        doc.addImage(logoBase64, margin, yPos, 20, 20);
+        const logoDimensions = await getImageDimensions(logoBase64);
+        const logoAspectRatio = logoDimensions.width / logoDimensions.height;
+        const logoWidth = 40;
+        const logoHeight = logoAspectRatio ? logoWidth / logoAspectRatio : 40;
+        
+        doc.addImage(logoBase64, margin, yPos, logoWidth, logoHeight);
 
+        const textX = margin + logoWidth + 5;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
-        doc.text("Your Family Interior", margin + 25, yPos + 5);
+        doc.text("Your Family Interior", textX, yPos + 5);
         
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
@@ -92,8 +98,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
             'An ISO 9001 - 2015 Company',
             'www.amazmodularinterior.com'
         ];
-        doc.text(companyDetails, margin + 25, yPos + 10);
-        yPos += 40; // Adjusted spacing after removing text logo
+        doc.text(companyDetails, textX, yPos + 10);
+        yPos += Math.max(logoHeight, 20) + 20; // Advance yPos based on logo area
 
         // ----- Invoice Details -----
         doc.setTextColor(0, 0, 0);
@@ -141,15 +147,16 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
         doc.setFontSize(8);
         doc.text(`Total Items / Qty : ${invoice.items.length} / ${invoice.items.length}.000`, margin, yPos);
         doc.text(`TOTAL AMOUNT [IN WORDS] ${totalInWords}`, pageWidth - margin, yPos, { align: 'right', maxWidth: 100 });
-        yPos += 20;
+        
+        let signatureYPos = (doc as any).lastAutoTable.finalY + 20;
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
-        doc.text('AMOUNT PAID', pageWidth - margin, yPos, { align: 'right' });
-        yPos += 10;
+        doc.text('AMOUNT PAID', pageWidth - margin, signatureYPos, { align: 'right' });
+        signatureYPos += 10;
 
-        doc.text('For Your Family Interior', pageWidth - margin, yPos, { align: 'right' });
-        yPos += 5;
+        doc.text('For Your Family Interior', pageWidth - margin, signatureYPos, { align: 'right' });
+        signatureYPos += 5;
         
         // --- Signature Image ---
         const sigImgWidth = 248; // intrinsic width of signature image
@@ -160,12 +167,45 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
         const sigDisplayHeight = sigDisplayWidth / sigAspectRatio;
         const sigX = pageWidth - margin - sigDisplayWidth;
         
-        doc.addImage(signatureBase64, sigX, yPos, sigDisplayWidth, sigDisplayHeight);
-        yPos += sigDisplayHeight + 2;
+        doc.addImage(signatureBase64, sigX, signatureYPos, sigDisplayWidth, sigDisplayHeight);
+        signatureYPos += sigDisplayHeight + 2;
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.text('Authorized Signatory', pageWidth - margin, yPos, { align: 'right' });
+        doc.text('Authorized Signatory', pageWidth - margin, signatureYPos, { align: 'right' });
+
+        // --- Terms & Conditions Footer ---
+        const footerY = pageHeight - 15;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('TERMS AND CONDITION: ', margin, footerY);
+        doc.setFont('helvetica', 'normal');
+        doc.text('ADVANCE AMOUNT ONCE PAID IS NON REFUNDABLE.', margin + 38, footerY);
+
+        // ----- Watermark -----
+        const watermarkAspectRatio = logoDimensions.width / logoDimensions.height;
+        const watermarkWidth = pageWidth * 0.75; // Watermark is 75% of page width
+        const watermarkHeight = watermarkAspectRatio ? watermarkWidth / watermarkAspectRatio : watermarkWidth;
+        const watermarkX = (pageWidth - watermarkWidth) / 2;
+        const watermarkY = (pageHeight - watermarkHeight) / 2;
+        
+        const GState = (doc as any).GState;
+        const pageCount = (doc as any).internal.getNumberOfPages();
+
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          // Set transparency for the watermark
+          doc.setGState(new GState({ opacity: 0.1, 'stroke-opacity': 0.1 }));
+          doc.addImage(
+            logoBase64,
+            watermarkX,
+            watermarkY,
+            watermarkWidth,
+            watermarkHeight
+          );
+          // Reset transparency
+          doc.setGState(new GState({ opacity: 1, 'stroke-opacity': 1 }));
+        }
 
         doc.save(`Invoice-${invoice.invoiceNumber}.pdf`);
 
@@ -272,6 +312,13 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
                     <img src="https://res.cloudinary.com/dzvmyhpff/image/upload/v1759808782/Untitled_design_23_mw6kko.png" alt="Signature" className="w-32 ml-auto" />
                     <p className="text-xs border-t mt-1 pt-1">Authorized Signatory</p>
                 </div>
+            </div>
+            
+            {/* Terms and Conditions Footer */}
+            <div className="mt-8 pt-4 border-t border-neutral-200 text-center">
+                <p className="text-xs text-neutral-600 font-semibold">
+                    TERMS AND CONDITION: ADVANCE AMOUNT ONCE PAID IS NON REFUNDABLE
+                </p>
             </div>
         </div>
 

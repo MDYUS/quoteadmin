@@ -85,3 +85,15 @@ export const imageUrlToBase64 = async (url: string): Promise<string> => {
     reader.readAsDataURL(blob);
   });
 };
+
+// Gets the dimensions of an image from its data URL.
+export const getImageDimensions = (dataUrl: string): Promise<{width: number, height: number}> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+};

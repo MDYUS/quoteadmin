@@ -2,11 +2,13 @@ import { Invoice } from '../types';
 
 export const defaultInvoiceData: Invoice = {
   id: '',
-  invoiceNumber: `INV-${Math.floor(10000 + Math.random() * 90000)}`,
+  // The unique invoice number is now generated in the InvoicePage component
+  // to ensure it's different for each new invoice.
+  invoiceNumber: '',
   invoiceDate: new Date().toISOString().split('T')[0],
-  customerName: 'MR.RAVICHANDRAN',
-  customerPhone: '8939602000',
+  customerName: 'CUSTOMER NAME',
+  customerPhone: 'PHONE NUMBER',
   items: [
-    { id: 'item-1', description: 'HOME INTERIOR ADVANCE', qty: '1 PAC', amount: 275000.00 },
+    { id: 'item-1', description: 'HOME INTERIOR ADVANCE', qty: '1 PAC', amount: 0 },
   ],
 };
