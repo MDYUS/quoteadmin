@@ -9,12 +9,15 @@ import ProjectTracker from './components/ProjectTracker';
 import TeamMemberTracker from './components/TeamMemberTracker';
 import PaymentsPage from './components/PaymentsPage';
 import LeadHistory from './components/LeadHistory';
-import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus } from './types';
+import InvoicePage from './components/InvoicePage';
+import InvoiceHistoryPage from './components/InvoiceHistoryPage';
+import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus, Invoice } from './types';
 import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, DownloadIcon, WarningIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
 import { usePayments } from './hooks/usePayments';
+import { useInvoices } from './hooks/useInvoices';
 import LoginPage from './components/LoginPage';
 import { formatStatus } from './utils';
 import WarningPopup from './components/WarningPopup';
@@ -93,7 +96,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
   );
 };
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history';
 
 const userNames: Record<string, string> = {
   '786786': 'Yusuf',
@@ -106,9 +109,6 @@ const getGreeting = () => {
     if (hour < 17) return "Good Afternoon";
     return "Good Evening";
 };
-
-// A reliable, audible, and self-contained warning sound in base64 format.
-const WARNING_SOUND_BASE64 = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVEwT19LALsCFgCFAR2/tS/9/f7e/Yf/c/wZ/4X/9f6d/pv+Jf8r/4D/SP/T/rf/Ev9t/6YBGRsQ/7f+s/9t/9n/wP/MAHkBPwEAASEENwR1BkcGwgfJCAsJ0Qo/DEcNKg+yEFsS1xQJFRgXRBdaGD8ZehpJG8Adwh4BHwogHiEnIiwwJjAuMDYyNDU1NkE4Rjw/QUNDREhFR0lKTE1PTVBRUlNUVFVXV1hZWltcXV5gX2Zjam5xdXt/gIKDiIaLi4+PkZKTlZeYmZucnZ6foaKjpKanqKqsra6vsLGztLa4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NjZ2tvj4+Xm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj9AQUJDREVGR0hJSktMTU5PUFFSU1VWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==';
 
 const App: React.FC = () => {
   // Main App State
@@ -142,21 +142,20 @@ const App: React.FC = () => {
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
-  // Ref for the audio element
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
   // Data Hooks
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
   const { siteVisits, addVisit, updateVisit, deleteVisit } = useSiteVisits();
   const { projects, addProject, updateProject, deleteProject } = useProjects();
   const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember } = useTeamMembers();
   const { payments } = usePayments();
+  const { invoices, addInvoice, updateInvoice, deleteInvoice } = useInvoices();
 
   // Modal/Form State
   const [isLeadFormVisible, setLeadFormVisible] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [isVisitModalVisible, setVisitModalVisible] = useState(false);
   const [leadForVisit, setLeadForVisit] = useState<Lead | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
   // Effect to handle PWA installation prompt and show banner
   useEffect(() => {
@@ -258,33 +257,6 @@ const App: React.FC = () => {
     }
   }, [leads]);
 
-
-  // Effect for playing/stopping warning sound
-  useEffect(() => {
-    if (isWarningPopupVisible) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(WARNING_SOUND_BASE64);
-        audioRef.current.loop = true;
-      }
-      audioRef.current.play().catch(error => {
-        console.warn("Audio autoplay was blocked by the browser. A user interaction is required to enable sound.", error);
-      });
-    } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-    
-    // Cleanup function to stop audio when the component unmounts
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, [isWarningPopupVisible]);
-
     // Effect for checking payment statuses
   useEffect(() => {
     if (!payments.length || !isAuthenticated) return;
@@ -369,6 +341,32 @@ const App: React.FC = () => {
       setErrorMessage(`Failed to save lead: ${error.message}`);
     }
   };
+
+  const handleInvoiceSave = async (invoice: Invoice) => {
+    try {
+      if (editingInvoice) {
+        await updateInvoice(invoice);
+        setSuccessMessage('Invoice updated successfully!');
+      } else {
+        await addInvoice(invoice);
+        setSuccessMessage('Invoice saved successfully!');
+      }
+      setEditingInvoice(null);
+      setCurrentView('invoice-history');
+    } catch (error: any) {
+      setErrorMessage(`Failed to save invoice: ${error.message}`);
+    }
+  };
+
+  const handleInvoiceDelete = async (id: string) => {
+    try {
+      await deleteInvoice(id);
+      setSuccessMessage('Invoice deleted successfully.');
+    } catch (error: any) {
+      setErrorMessage(`Failed to delete invoice: ${error.message}`);
+    }
+  };
+
 
   const handleLeadStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     const leadToUpdate = leads.find(l => l.id === leadId);
@@ -518,6 +516,10 @@ const App: React.FC = () => {
         return <LeadList leads={leads} onAdd={() => { setEditingLead(null); setLeadFormVisible(true); }} onEdit={(lead) => { setEditingLead(lead); setLeadFormVisible(true); }} onLeadStatusChange={handleLeadStatusChange} />;
       case 'quote':
         return <QuotePage />;
+      case 'invoice':
+        return <InvoicePage invoiceToEdit={editingInvoice} onSave={handleInvoiceSave} onCancel={() => { setEditingInvoice(null); setCurrentView('invoice-history'); }} />;
+      case 'invoice-history':
+        return <InvoiceHistoryPage invoices={invoices} onEdit={(invoice) => { setEditingInvoice(invoice); setCurrentView('invoice'); }} onDelete={handleInvoiceDelete} onAddNew={() => { setEditingInvoice(null); setCurrentView('invoice'); }} />;
       case 'site-visits':
         return <SiteVisitCalendar siteVisits={siteVisits} addVisit={addVisit} updateVisit={updateVisit} deleteVisit={deleteVisit} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'projects':

@@ -4,6 +4,8 @@ import { DatabaseIcon, DownloadIcon } from './icons';
 import StatusBadge from './StatusBadge';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { LOGO_URL } from '../constants';
+import { imageUrlToBase64 } from '../utils';
 
 interface LeadHistoryProps {
   leads: Lead[];
@@ -13,10 +15,6 @@ const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
-
-const LOGO_URL = 'https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-
 
 const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -47,43 +45,26 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
     setIsDownloading(true);
 
     try {
-      const response = await fetch(`${CORS_PROXY}${encodeURIComponent(LOGO_URL)}`);
-      if (!response.ok) throw new Error('Logo fetch failed');
-      const blob = await response.blob();
-      const logoBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
       const doc = new jsPDF();
+      const logoBase64 = await imageUrlToBase64(LOGO_URL);
       const monthName = MONTHS[selectedMonth - 1];
       const year = selectedYear;
       const totalLeads = filteredLeads.length;
 
-      const addLogo = () => new Promise<number>((resolve) => {
-        const img = new Image();
-        img.src = logoBase64;
-        img.onload = () => {
-          const imgWidth = img.width;
-          const imgHeight = img.height;
+      const addLogo = () => {
+          const imgWidth = 300;
+          const imgHeight = 300;
           const aspectRatio = imgWidth / imgHeight;
 
           const logoWidth = 30;
           const logoHeight = logoWidth / aspectRatio;
           
           const yPos = 15;
-          doc.addImage(logoBase64, 'PNG', 14, yPos, logoWidth, logoHeight);
-          resolve(yPos + logoHeight + 5); // new y position
-        };
-        img.onerror = () => {
-            console.error("Failed to load logo for PDF generation.");
-            resolve(50); // Fallback y position
-        };
-      });
+          doc.addImage(logoBase64, 14, yPos, logoWidth, logoHeight);
+          return yPos + logoHeight + 5; // new y position
+      };
 
-      let yPos = await addLogo();
+      let yPos = addLogo();
 
       // Title
       doc.setFontSize(18);
@@ -119,7 +100,7 @@ const LeadHistory: React.FC<LeadHistoryProps> = ({ leads }) => {
       doc.save(`Lead_Report_${monthName}_${year}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
-      alert("Could not generate PDF. Please check your internet connection and try again.");
+      alert("Could not generate PDF. An unexpected error occurred.");
     } finally {
       setIsDownloading(false);
     }

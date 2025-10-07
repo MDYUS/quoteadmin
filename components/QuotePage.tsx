@@ -4,13 +4,12 @@ import { QuoteItem, QuoteData } from '../types';
 import { PlusIcon, TrashIcon, DownloadIcon } from './icons';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { LOGO_URL } from '../constants';
+import { imageUrlToBase64 } from '../utils';
 
 // ===== Constants =====
 const MM2_TO_SQFT = 92903.04;
 const GST_RATE = 0.18;
-const LOGO_URL =
-  'https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // ===== Helpers =====
 const formatCurrency = (amount: number) => {
@@ -94,17 +93,7 @@ const QuotePage: FC = () => {
     const grayColor: [number, number, number] = [245, 245, 245];
 
     try {
-      // Fetch logo (CORS-safe)
-      const response = await fetch(`${CORS_PROXY}${encodeURIComponent(LOGO_URL)}`);
-      if (!response.ok) throw new Error('Logo fetch failed');
-      const blob = await response.blob();
-      const logoBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
+      const logoBase64 = await imageUrlToBase64(LOGO_URL);
       const pageHeight = doc.internal.pageSize.getHeight();
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 14;
@@ -114,30 +103,21 @@ const QuotePage: FC = () => {
       doc.setTextColor(0, 0, 0);
 
       // Centered Header
-      const addLogo = () => new Promise<number>((resolve) => {
-        const img = new Image();
-        img.src = logoBase64;
-        img.onload = () => {
-          const imgWidth = img.width;
-          const imgHeight = img.height;
-          const aspectRatio = imgWidth / imgHeight;
-          
-          const logoWidth = 30;
-          const logoHeight = logoWidth / aspectRatio;
-          const logoX = (pageWidth - logoWidth) / 2;
-          const logoY = yPos - 10;
-          
-          doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
-          resolve(logoY + logoHeight + 10); // new y position for title
-        };
-        img.onerror = () => {
-          console.error("Failed to load logo for PDF generation.");
-          resolve(yPos + 30); // Fallback y position
-        };
-      });
+      const addLogo = () => {
+        const imgWidth = 300; // Intrinsic width of the logo image
+        const imgHeight = 300; // Intrinsic height
+        const aspectRatio = imgWidth / imgHeight;
+        
+        const logoWidth = 30;
+        const logoHeight = logoWidth / aspectRatio;
+        const logoX = (pageWidth - logoWidth) / 2;
+        const logoY = yPos - 10;
+        
+        doc.addImage(logoBase64, logoX, logoY, logoWidth, logoHeight);
+        return logoY + logoHeight + 10; // new y position for title
+      };
 
-      yPos = await addLogo();
-
+      yPos = addLogo();
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
@@ -298,7 +278,7 @@ const QuotePage: FC = () => {
       doc.save(`Quote-${quote.clientName.replace(/\s/g, '_')}.pdf`);
     } catch (e) {
       console.error(e);
-      alert('Failed to generate PDF. Please check your internet connection and try again.');
+      alert('Failed to generate PDF. An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }

@@ -6,6 +6,8 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json', // Ensure the manifest is cached
+  '/icon-192.png',
+  '/icon-512.png',
   'https://cdn.tailwindcss.com',
 ];
 
@@ -70,8 +72,8 @@ self.addEventListener('push', event => {
   const title = data.title || 'Amaz CRM Notification';
   const options = {
     body: data.body || 'You have a new update.',
-    icon: '/logo192.png', // Icon to display in the notification
-    badge: '/logo192.png' // Icon for the notification tray
+    icon: '/icon-192.png', // Icon to display in the notification
+    badge: '/icon-192.png' // Icon for the notification tray
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

@@ -1,7 +1,8 @@
 import React from 'react';
 import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, CreditCardIcon, LogoutIcon, DatabaseIcon } from './icons';
+import { LOGO_URL } from '../constants';
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history';
 
 interface SidebarProps {
   currentView: View;
@@ -43,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
     <aside className="w-64 bg-neutral-900 text-neutral-100 flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out h-full" aria-label="Sidebar">
       <div className="px-4 py-6 border-b border-neutral-800">
          <img 
-            src="https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png" 
+            src={LOGO_URL} 
             alt="Amaz Interior Logo" 
             className="h-16 w-auto mx-auto mb-2"
         />
@@ -66,6 +67,20 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             setCurrentView={setCurrentView}
             icon={<DocumentTextIcon className="w-6 h-6" />}
             label="Create Quote"
+          />
+           <NavItem 
+            view="invoice"
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            icon={<DocumentTextIcon className="w-6 h-6" />}
+            label="Create Invoice"
+          />
+          <NavItem 
+            view="invoice-history"
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            icon={<DatabaseIcon className="w-6 h-6" />}
+            label="Invoice History"
           />
           <NavItem 
             view="site-visits"

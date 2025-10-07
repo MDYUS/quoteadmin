@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { LoadingSpinner } from './icons';
-
-const LOGO_URL = 'https://amazmodularinterior.com/wp-content/uploads/2024/07/Grey_Orange_Modern_Circle_Class_Logo__7_-removebg-preview-e1739462864846.png';
+import { LOGO_URL } from '../constants';
 
 interface LoginPageProps {
   onLoginSuccess: (userId: string) => void;

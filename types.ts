@@ -121,6 +121,25 @@ export interface Payment {
   createdAt?: string;
 }
 
+// Types for Invoicing
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  qty: string;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string; // YYYY-MM-DD
+  customerName: string;
+  customerPhone: string;
+  items: InvoiceItem[];
+  createdAt?: string;
+}
+
+
 // FIX: Add the missing ClientCommLog interface to resolve import errors.
 export interface ClientCommLog {
   id: string;
