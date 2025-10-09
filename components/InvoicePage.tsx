@@ -70,7 +70,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
 
       try {
         const logoBase64 = await imageUrlToBase64(LOGO_URL);
-        const signatureBase64 = await imageUrlToBase64('https://res.cloudinary.com/dzvmyhpff/image/upload/v1759808782/Untitled_design_23_mw6kko.png');
+        const signatureBase64 = await imageUrlToBase64('https://res.cloudinary.com/dzvmyhpff/image/upload/v1759997902/MANSGN_usxdlv.jpg');
         
         // ----- PDF Header -----
         doc.setFont('helvetica', 'normal');
@@ -208,6 +208,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
         }
 
         doc.save(`Invoice-${invoice.invoiceNumber}.pdf`);
+        onSave(invoice);
 
       } catch (err) {
         console.error("PDF Generation Error:", err);
@@ -309,7 +310,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
                 <div className="text-right">
                     <p className="font-semibold">AMOUNT PAID</p>
                     <p className="text-sm mt-8">For Your Family Interior</p>
-                    <img src="https://res.cloudinary.com/dzvmyhpff/image/upload/v1759808782/Untitled_design_23_mw6kko.png" alt="Signature" className="w-32 ml-auto" />
+                    <img src="https://res.cloudinary.com/dzvmyhpff/image/upload/v1759997902/MANSGN_usxdlv.jpg" alt="Signature" className="w-32 ml-auto" />
                     <p className="text-xs border-t mt-1 pt-1">Authorized Signatory</p>
                 </div>
             </div>
@@ -325,10 +326,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ invoiceToEdit, onSave, onCanc
         {/* Action Buttons */}
         <div className="max-w-4xl mx-auto mt-6 flex justify-end gap-4">
             <button onClick={onCancel} className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50">Cancel</button>
-            <button onClick={() => onSave(invoice)} className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700">Save Invoice</button>
-            <button onClick={handleGeneratePDF} disabled={isLoading} className="inline-flex items-center px-4 py-2 bg-neutral-800 text-white rounded-lg text-sm font-medium hover:bg-neutral-900 disabled:opacity-50">
+            <button onClick={handleGeneratePDF} disabled={isLoading} className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50">
                 <DownloadIcon className="h-5 w-5 mr-2" />
-                {isLoading ? 'Generating...' : 'Download PDF'}
+                {isLoading ? 'Saving & Downloading...' : 'Save & Download PDF'}
             </button>
         </div>
     </div>
