@@ -1,9 +1,8 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadStatus, FileInfo } from '../types';
 import { STATUS_OPTIONS } from '../constants';
-import { XIcon, TrashIcon, DownloadIcon, FileIcon, LoadingSpinner } from './icons';
+import { XIcon, TrashIcon, DownloadIcon, FileIcon, LoadingSpinner, ShareIcon } from './icons';
 import { formatStatus } from '../utils';
 
 interface LeadFormProps {
@@ -23,6 +22,7 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete, i
   const [details, setDetails] = useState('');
   const [floorPlan, setFloorPlan] = useState<FileInfo | null>(null);
   const [errors, setErrors] = useState<{ name?: string, phone?: string }>({});
+  const [copySuccess, setCopySuccess] = useState('');
 
   useEffect(() => {
     setName(lead?.name || '');
@@ -80,6 +80,28 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete, i
         onDelete(lead.id);
     }
   }
+
+  const handleShare = () => {
+    if (!lead) return;
+    try {
+      // Use the canonical, public-facing URL of the CRM to ensure the link is always correct.
+      const baseUrl = 'https://crmhead.amazmodularinterior.com/';
+      const shareUrl = `${baseUrl}?share=${lead.id}`;
+
+      navigator.clipboard.writeText(shareUrl).then(() => {
+          setCopySuccess('Link copied!');
+          setTimeout(() => setCopySuccess(''), 2500);
+      }, (err) => {
+          setCopySuccess('Failed to copy.');
+          console.error('Could not copy text: ', err);
+          setTimeout(() => setCopySuccess(''), 2500);
+      });
+    } catch (error) {
+      console.error('Failed to construct share URL:', error);
+      setCopySuccess('Failed to copy.');
+      setTimeout(() => setCopySuccess(''), 2500);
+    }
+  };
   
   const inputClass = "mt-1 block w-full border border-neutral-300 rounded-lg shadow-sm p-3 focus:ring-primary-500 focus:border-primary-500 bg-neutral-50 text-neutral-900 placeholder:text-neutral-400";
   const errorInputClass = `${inputClass} border-red-500`;
@@ -146,20 +168,26 @@ const LeadForm: React.FC<LeadFormProps> = ({ lead, onSave, onCancel, onDelete, i
           </div>
         </div>
         <div className="px-6 py-4 bg-neutral-50 rounded-b-xl flex justify-between items-center flex-shrink-0 border-t border-neutral-200">
-            <div>
+            <div className="flex items-center gap-4">
                 {lead && (
-                    <button onClick={handleDelete} disabled={isDeleting} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-wait">
-                        {isDeleting ? (
-                            <>
-                                <LoadingSpinner className="animate-spin h-4 w-4 text-red-600" /> Deleting...
-                            </>
-                        ) : (
-                            <>
-                                <TrashIcon/> Delete Lead
-                            </>
-                        )}
-                    </button>
+                    <>
+                        <button onClick={handleShare} disabled={!!copySuccess} title="Copy share link" className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors disabled:opacity-50">
+                            <ShareIcon className="h-5 w-5"/> Share
+                        </button>
+                        <button onClick={handleDelete} disabled={isDeleting} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-wait">
+                            {isDeleting ? (
+                                <>
+                                    <LoadingSpinner className="animate-spin h-4 w-4 text-red-600" /> Deleting...
+                                </>
+                            ) : (
+                                <>
+                                    <TrashIcon/> Delete Lead
+                                </>
+                            )}
+                        </button>
+                    </>
                 )}
+                {copySuccess && <span className="text-sm font-medium text-green-600 animate-fade-in">{copySuccess}</span>}
             </div>
             <div className="flex space-x-3">
               <button onClick={onCancel} className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">Cancel</button>

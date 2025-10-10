@@ -22,6 +22,7 @@ import LoginPage from './components/LoginPage';
 import { formatStatus } from './utils';
 import WarningPopup from './components/WarningPopup';
 import PaymentOverduePopup from './components/PaymentOverduePopup';
+import PublicLeadEditor from './components/PublicLeadEditor';
 
 // --- ScheduleVisitModal Component Definition ---
 interface ScheduleVisitModalProps {
@@ -111,6 +112,18 @@ const getGreeting = () => {
 };
 
 const App: React.FC = () => {
+  // --- New, Robust Share Link Handling ---
+  const [sharedLeadId, setSharedLeadId] = useState<string | null>(null);
+  const [isCheckingShare, setIsCheckingShare] = useState(true);
+
+  useEffect(() => {
+    // This effect runs only once on component mount to check the URL.
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('share');
+    setSharedLeadId(id);
+    setIsCheckingShare(false); // Finished checking
+  }, []);
+  
   // Main App State
   const [currentView, setCurrentView] = useState<View>('leads');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -505,7 +518,24 @@ const App: React.FC = () => {
           }
       });
   };
+  
+  // --- New Rendering Logic ---
 
+  // 1. Render a loading spinner while checking the URL to prevent flashes of incorrect content.
+  if (isCheckingShare) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-neutral-100">
+        <LoadingSpinner className="h-10 w-10 text-primary-600"/>
+      </div>
+    );
+  }
+
+  // 2. After checking, if a share ID exists, render the public editor.
+  if (sharedLeadId) {
+    return <PublicLeadEditor leadId={sharedLeadId} />;
+  }
+  
+  // 3. If not a share link, proceed with the normal authentication flow.
   if (!isAuthenticated) {
     return <LoginPage onLoginSuccess={handleLogin} />;
   }
@@ -519,7 +549,7 @@ const App: React.FC = () => {
       case 'invoice':
         return <InvoicePage invoiceToEdit={editingInvoice} onSave={handleInvoiceSave} onCancel={() => { setEditingInvoice(null); setCurrentView('invoice-history'); }} />;
       case 'invoice-history':
-        return <InvoiceHistoryPage invoices={invoices} onEdit={(invoice) => { setEditingInvoice(invoice); setCurrentView('invoice'); }} onDelete={handleInvoiceDelete} onAddNew={() => { setEditingInvoice(null); setCurrentView('invoice'); }} />;
+        return <InvoiceHistoryPage invoices={invoices} onEdit={(invoice) => { setEditingInvoice(invoice); setCurrentView('invoice'); }} onDelete={handleInvoiceDelete} onAddNew={() => { setEditingInvoice(null); setCurrentView('invoice'); }} currentUserId={currentUserId} />;
       case 'site-visits':
         return <SiteVisitCalendar siteVisits={siteVisits} addVisit={addVisit} updateVisit={updateVisit} deleteVisit={deleteVisit} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'projects':

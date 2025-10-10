@@ -7,9 +7,10 @@ interface InvoiceHistoryPageProps {
   onEdit: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  currentUserId: string | null;
 }
 
-const InvoiceHistoryPage: React.FC<InvoiceHistoryPageProps> = ({ invoices, onEdit, onDelete, onAddNew }) => {
+const InvoiceHistoryPage: React.FC<InvoiceHistoryPageProps> = ({ invoices, onEdit, onDelete, onAddNew, currentUserId }) => {
 
   const formatCurrency = (amount: number) => {
     if (isNaN(amount)) return '0.00';
@@ -65,9 +66,11 @@ const InvoiceHistoryPage: React.FC<InvoiceHistoryPageProps> = ({ invoices, onEdi
                       <button onClick={() => onEdit(invoice)} className="text-primary-600 hover:text-primary-800 font-semibold">
                         Edit
                       </button>
-                      <button onClick={() => window.confirm('Are you sure?') && onDelete(invoice.id)} className="text-red-600 hover:text-red-800 font-semibold">
-                        Delete
-                      </button>
+                      {currentUserId === '786786' && (
+                        <button onClick={() => window.confirm('Are you sure?') && onDelete(invoice.id)} className="text-red-600 hover:text-red-800 font-semibold">
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
