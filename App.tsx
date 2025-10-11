@@ -12,7 +12,7 @@ import LeadHistory from './components/LeadHistory';
 import InvoicePage from './components/InvoicePage';
 import InvoiceHistoryPage from './components/InvoiceHistoryPage';
 import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus, Invoice } from './types';
-import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, DownloadIcon, WarningIcon } from './components/icons';
+import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, ArrowDownTrayIcon, WarningIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
 import { useTeamMembers } from './hooks/useTeamMembers';
@@ -153,7 +153,6 @@ const App: React.FC = () => {
   // State for Push Notifications & PWA Installation
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   // Data Hooks
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
@@ -170,18 +169,12 @@ const App: React.FC = () => {
   const [leadForVisit, setLeadForVisit] = useState<Lead | null>(null);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
 
-  // Effect to handle PWA installation prompt and show banner
+  // Effect to handle PWA installation prompt
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
         event.preventDefault();
-        const isDismissed = localStorage.getItem('installBannerDismissed') === 'true';
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-        // Only show banner if it's not dismissed and the app isn't already installed
-        if (!isDismissed && !isStandalone) {
-            setInstallPromptEvent(event);
-            setShowInstallBanner(true);
-        }
+        // Store the event so it can be triggered later.
+        setInstallPromptEvent(event);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -437,29 +430,20 @@ const App: React.FC = () => {
     };
 
 
-  // --- PWA Installation Banner Logic ---
+  // --- PWA Installation Logic ---
   const handleInstallPrompt = () => {
     if (!installPromptEvent) return;
     
     // Show the browser's installation prompt
     installPromptEvent.prompt();
     
-    // Hide our banner immediately
-    setShowInstallBanner(false);
-    
     installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
       if (choiceResult.outcome === 'accepted') {
         setSuccessMessage('App installed successfully!');
       }
-      // The prompt can only be used once; clear it.
+      // The prompt can only be used once; clear the event.
       setInstallPromptEvent(null);
     });
-  };
-
-  const handleDismissInstallBanner = () => {
-    // Remember the user's choice not to install
-    localStorage.setItem('installBannerDismissed', 'true');
-    setShowInstallBanner(false);
   };
 
   // Helper function to convert VAPID key
@@ -595,6 +579,16 @@ const App: React.FC = () => {
                         <BellIcon className="h-5 w-5" />
                       </button>
                     )}
+                    {installPromptEvent && (
+                        <button
+                          onClick={handleInstallPrompt}
+                          title="Install App"
+                          className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
+                        >
+                          <ArrowDownTrayIcon className="h-5 w-5 sm:mr-2" />
+                          <span className="hidden sm:inline">Install App</span>
+                        </button>
+                    )}
                     <button 
                       onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} 
                       title="Add New Lead"
@@ -691,29 +685,6 @@ const App: React.FC = () => {
           leads={warningLeads}
           onClose={handleCloseWarning}
         />
-      )}
-
-      {showInstallBanner && (
-        <div className="fixed bottom-0 left-0 right-0 bg-primary-900 text-white p-4 shadow-lg z-[100] animate-fade-in flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
-            <div className="flex items-center gap-4">
-                <DownloadIcon className="h-10 w-10 flex-shrink-0 hidden sm:block" />
-                <div>
-                    <p className="font-bold">Install the Amaz CRM App</p>
-                    <p className="text-sm text-primary-200">Add to your home screen for quick and easy access.</p>
-                </div>
-            </div>
-            <div className="flex items-center gap-3 flex-shrink-0 mt-3 sm:mt-0">
-                <button 
-                    onClick={handleInstallPrompt}
-                    className="px-5 py-2 bg-white text-primary-800 border border-transparent rounded-lg text-sm font-semibold hover:bg-primary-100 transition-colors"
-                >
-                    Install
-                </button>
-                <button onClick={handleDismissInstallBanner} className="p-2 text-primary-200 hover:text-white rounded-full hover:bg-white/10" aria-label="Dismiss">
-                    <XIcon className="h-6 w-6" />
-                </button>
-            </div>
-        </div>
       )}
     </div>
   );

@@ -12,9 +12,15 @@ const users: Record<string, string> = {
   '667733': 'AMAZ@25int',
 };
 
+const loginCodes: Record<string, string> = {
+  '210925': '667733', // AKKA
+  '250303': '786786', // YUSUF
+};
+
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [amazId, setAmazId] = useState('');
   const [password, setPassword] = useState('');
+  const [loginCode, setLoginCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,6 +41,25 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         setError('Invalid Amaz ID or Password.');
         setIsLoading(false);
       }
+    }, 500);
+  };
+
+  const handleCodeLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginCode) {
+        setError('Please enter your login code.');
+        return;
+    }
+    setIsLoading(true);
+    setError('');
+
+    setTimeout(() => {
+        if (loginCodes[loginCode]) {
+            onLoginSuccess(loginCodes[loginCode]);
+        } else {
+            setError('Invalid login code.');
+            setIsLoading(false);
+        }
     }, 500);
   };
   
@@ -61,9 +86,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   name="amazId"
                   type="text"
                   autoComplete="username"
-                  required
                   value={amazId}
-                  onChange={(e) => setAmazId(e.target.value)}
+                  onChange={(e) => { setAmazId(e.target.value); setError(''); }}
                   className={inputClass}
                   disabled={isLoading}
                 />
@@ -80,31 +104,70 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
                   className={inputClass}
                   disabled={isLoading}
                 />
               </div>
             </div>
             
-            {error && (
-                <div className="text-sm text-center font-medium text-red-600" role="alert">
-                    {error}
-                </div>
-            )}
-
             <div>
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? <LoadingSpinner className="h-5 w-5 text-white" /> : 'Log In'}
+                {isLoading && !loginCode ? <LoadingSpinner className="h-5 w-5 text-white" /> : 'Log In'}
               </button>
             </div>
           </form>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center">
+            <div className="flex-grow border-t border-neutral-300"></div>
+            <span className="flex-shrink mx-4 text-xs font-medium text-neutral-500">OR</span>
+            <div className="flex-grow border-t border-neutral-300"></div>
+          </div>
+          
+          {/* Code Login Form */}
+          <form onSubmit={handleCodeLogin} className="space-y-4">
+            <div>
+              <label htmlFor="loginCode" className="block text-sm font-medium text-neutral-700">
+                Code to Login
+              </label>
+              <div className="mt-1">
+                <input
+                  id="loginCode"
+                  name="loginCode"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={loginCode}
+                  onChange={(e) => { setLoginCode(e.target.value); setError(''); }}
+                  className={inputClass}
+                  disabled={isLoading}
+                  placeholder="Enter your unique code"
+                />
+              </div>
+            </div>
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center py-3 px-4 border border-neutral-300 rounded-lg shadow-sm text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading && loginCode ? <LoadingSpinner className="h-5 w-5 text-primary-600" /> : 'Login with Code'}
+              </button>
+            </div>
+          </form>
+
+          {error && (
+              <div className="mt-4 text-sm text-center font-medium text-red-600" role="alert">
+                  {error}
+              </div>
+          )}
+
         </div>
       </div>
     </div>
