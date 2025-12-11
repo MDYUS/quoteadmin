@@ -1,3 +1,6 @@
+
+import { WARNING_SOUND_URL } from './constants';
+
 // Simple key converters for JS object <-> DB records
 
 const toCamelCase = (s: string) => s.replace(/(_\w)/g, k => k[1].toUpperCase());
@@ -96,4 +99,15 @@ export const getImageDimensions = (dataUrl: string): Promise<{width: number, hei
     img.onerror = reject;
     img.src = dataUrl;
   });
+};
+
+export const playWarningSound = () => {
+    try {
+        const audio = new Audio(WARNING_SOUND_URL);
+        audio.play().catch(error => {
+            console.warn("Audio playback failed (usually due to lack of user interaction):", error);
+        });
+    } catch (error) {
+        console.error("Failed to initialize audio:", error);
+    }
 };

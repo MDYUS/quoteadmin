@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLeads } from './hooks/useLeads';
 import LeadList from './components/LeadList';
@@ -19,7 +20,7 @@ import { useTeamMembers } from './hooks/useTeamMembers';
 import { usePayments } from './hooks/usePayments';
 import { useInvoices } from './hooks/useInvoices';
 import LoginPage from './components/LoginPage';
-import { formatStatus } from './utils';
+import { formatStatus, playWarningSound } from './utils';
 import WarningPopup from './components/WarningPopup';
 import PaymentOverduePopup from './components/PaymentOverduePopup';
 import PublicLeadEditor from './components/PublicLeadEditor';
@@ -305,6 +306,25 @@ const App: React.FC = () => {
     }
 
   }, [payments, isAuthenticated]);
+
+  // Sound triggers for warnings and reminders
+  useEffect(() => {
+    if (isWarningPopupVisible) playWarningSound();
+  }, [isWarningPopupVisible]);
+
+  useEffect(() => {
+    if (isOverduePopupVisible) playWarningSound();
+  }, [isOverduePopupVisible]);
+
+  useEffect(() => {
+    if (isWeeklyNoticeVisible) playWarningSound();
+  }, [isWeeklyNoticeVisible]);
+
+  useEffect(() => {
+    if (isMonthEndNotificationVisible && !isMonthEndNotificationDismissed) {
+        playWarningSound();
+    }
+  }, [isMonthEndNotificationVisible]);
 
 
   const handleCloseWarning = () => {
