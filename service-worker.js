@@ -1,3 +1,4 @@
+
 // A unique name for the cache
 const CACHE_NAME = 'amaz-crm-cache-v2';
 
@@ -75,6 +76,15 @@ self.addEventListener('push', event => {
     icon: '/icon-192.png', // Icon to display in the notification
     badge: '/icon-192.png' // Icon for the notification tray
   };
+
+  // If specific vibration pattern is requested (e.g., for Warning Alarm)
+  if (data.type === 'alarm') {
+      // Long vibration pattern: Vibrate 500ms, pause 100ms, vibrate 500ms...
+      options.vibrate = [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40, 500];
+      options.tag = 'alarm-notification';
+      options.renotify = true;
+      options.requireInteraction = true; // Keep notification on screen until user interacts
+  }
 
   event.waitUntil(self.registration.showNotification(title, options));
 });

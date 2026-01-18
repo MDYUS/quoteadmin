@@ -101,13 +101,68 @@ export const getImageDimensions = (dataUrl: string): Promise<{width: number, hei
   });
 };
 
+// Singleton audio instance to manage state
+let warningAudio: HTMLAudioElement | null = null;
+
 export const playWarningSound = () => {
+    // Safety check for environments without Audio support
+    if (typeof Audio === 'undefined') return;
+
     try {
-        const audio = new Audio(WARNING_SOUND_URL);
-        audio.play().catch(error => {
-            console.warn("Audio playback failed (usually due to lack of user interaction):", error);
-        });
+        if (!warningAudio) {
+            warningAudio = new Audio(WARNING_SOUND_URL);
+            warningAudio.loop = true; // Loop the audio
+        }
+        
+        // Ensure warningAudio is not null before checking paused
+        if (warningAudio && warningAudio.paused) {
+            const playPromise = warningAudio.play();
+            
+            // In modern browsers, play() returns a promise. 
+            // We catch errors to prevent unhandled promise rejections if user hasn't interacted with the document.
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Audio playback failed (usually due to lack of user interaction):", error);
+                });
+            }
+        }
     } catch (error) {
         console.error("Failed to initialize audio:", error);
     }
+};
+
+export const stopWarningSound = () => {
+    if (warningAudio) {
+        try {
+            warningAudio.pause();
+            warningAudio.currentTime = 0; // Reset to the beginning
+        } catch (e) {
+            console.error("Error stopping audio:", e);
+        }
+    }
+};
+
+// Detect simple device name
+export const getBrowserName = () => {
+    const userAgent = navigator.userAgent;
+    let browser = "Unknown Browser";
+    
+    if (userAgent.match(/chrome|chromium|crios/i)) {
+        browser = "Chrome";
+    } else if (userAgent.match(/firefox|fxios/i)) {
+        browser = "Firefox";
+    } else if (userAgent.match(/safari/i)) {
+        browser = "Safari";
+    } else if (userAgent.match(/opr\//i)) {
+        browser = "Opera";
+    } else if (userAgent.match(/edg/i)) {
+        browser = "Edge";
+    } else if (userAgent.match(/android/i)) {
+        browser = "Android Web";
+    } else if (userAgent.match(/iphone/i)) {
+        browser = "iPhone Web";
+    }
+
+    const platform = navigator.platform ? ` on ${navigator.platform}` : '';
+    return `${browser}${platform}`;
 };

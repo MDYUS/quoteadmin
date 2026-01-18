@@ -1,3 +1,4 @@
+
 export enum LeadStatus {
   RecentlyAdded = 'recently_added',
   Contacted = 'contacted',
@@ -151,4 +152,21 @@ export interface ClientCommLog {
   commImages: FileInfo[];
   otherDocs: FileInfo[];
   createdAt?: string;
+}
+
+// --- NEW TYPES FOR LIVE MOBILE NOTIFICATIONS ---
+export interface Device {
+  id: string;
+  user_id: string | null;
+  device_name: string;
+  last_active: string;
+}
+
+export interface LiveNotification {
+  id: string;
+  target_device_id: string;
+  title: string;
+  body: string;
+  type: 'notification' | 'warning';
+  created_at: string;
 }

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useLeads } from './hooks/useLeads';
+import { useDevices } from './hooks/useDevices'; // Import Device Hook
 import LeadList from './components/LeadList';
 import LeadForm from './components/LeadForm';
 import Sidebar from './components/Sidebar';
@@ -12,7 +13,9 @@ import PaymentsPage from './components/PaymentsPage';
 import LeadHistory from './components/LeadHistory';
 import InvoicePage from './components/InvoicePage';
 import InvoiceHistoryPage from './components/InvoiceHistoryPage';
-import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus, Invoice } from './types';
+import BudgetPage from './components/BudgetPage';
+import MobileNotiPage from './components/MobileNotiPage';
+import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus, Invoice, LiveNotification } from './types';
 import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, ArrowDownTrayIcon, WarningIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
@@ -20,10 +23,11 @@ import { useTeamMembers } from './hooks/useTeamMembers';
 import { usePayments } from './hooks/usePayments';
 import { useInvoices } from './hooks/useInvoices';
 import LoginPage from './components/LoginPage';
-import { formatStatus, playWarningSound } from './utils';
+import { formatStatus, playWarningSound, stopWarningSound } from './utils';
 import WarningPopup from './components/WarningPopup';
 import PaymentOverduePopup from './components/PaymentOverduePopup';
 import PublicLeadEditor from './components/PublicLeadEditor';
+import { supabase } from './supabaseClient'; // Import supabase for subscription
 
 // --- ScheduleVisitModal Component Definition ---
 interface ScheduleVisitModalProps {
@@ -98,7 +102,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
   );
 };
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history';
+type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history' | 'budget' | 'mobile-noti';
 
 const userNames: Record<string, string> = {
   '786786': 'Yusuf',
@@ -135,6 +139,9 @@ const App: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Register Device for Live Notifications
+  const currentDeviceId = useDevices(currentUserId);
+
   // State for the warning popup
   const [isWarningPopupVisible, setWarningPopupVisible] = useState(false);
   const [warningLeads, setWarningLeads] = useState<Lead[]>([]);
@@ -150,6 +157,9 @@ const App: React.FC = () => {
   const [overduePayment, setOverduePayment] = useState<Payment | null>(null);
   const [isWeeklyNoticeVisible, setWeeklyNoticeVisible] = useState(false);
   const [dueWeeklyPayment, setDueWeeklyPayment] = useState<Payment | null>(null);
+
+  // State for Live Notifications (App Wide)
+  const [liveNotification, setLiveNotification] = useState<{title: string, body: string, type: 'notification' | 'warning'} | null>(null);
 
   // State for Push Notifications & PWA Installation
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
@@ -169,6 +179,48 @@ const App: React.FC = () => {
   const [isVisitModalVisible, setVisitModalVisible] = useState(false);
   const [leadForVisit, setLeadForVisit] = useState<Lead | null>(null);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+
+  // LIVE NOTIFICATION LISTENER
+  useEffect(() => {
+      if (!currentDeviceId) return;
+
+      const channel = supabase
+          .channel('public:notifications')
+          .on(
+              'postgres_changes',
+              { event: 'INSERT', schema: 'public', table: 'notifications' },
+              (payload) => {
+                  const newNoti = payload.new as LiveNotification;
+                  // Check if this notification is for THIS device
+                  if (newNoti.target_device_id === currentDeviceId) {
+                      setLiveNotification({
+                          title: newNoti.title,
+                          body: newNoti.body,
+                          type: newNoti.type
+                      });
+
+                      // Trigger Vibration / Sound
+                      if (newNoti.type === 'warning') {
+                          playWarningSound();
+                          if (navigator.vibrate) {
+                              navigator.vibrate([1000, 200, 1000, 200, 2000]); // Long vibration pattern
+                          }
+                      } else {
+                          // Standard notification sound could go here
+                          if (navigator.vibrate) {
+                              navigator.vibrate([200, 100, 200]);
+                          }
+                      }
+                  }
+              }
+          )
+          .subscribe();
+
+      return () => {
+          supabase.removeChannel(channel);
+      };
+  }, [currentDeviceId]);
+
 
   // Effect to handle PWA installation prompt
   useEffect(() => {
@@ -307,24 +359,26 @@ const App: React.FC = () => {
 
   }, [payments, isAuthenticated]);
 
-  // Sound triggers for warnings and reminders
+  // Consolidated sound trigger effect for warnings and reminders
   useEffect(() => {
-    if (isWarningPopupVisible) playWarningSound();
-  }, [isWarningPopupVisible]);
+    const isAlertActive = 
+      isWarningPopupVisible || 
+      isOverduePopupVisible || 
+      isWeeklyNoticeVisible || 
+      (isMonthEndNotificationVisible && !isMonthEndNotificationDismissed) ||
+      (liveNotification?.type === 'warning');
 
-  useEffect(() => {
-    if (isOverduePopupVisible) playWarningSound();
-  }, [isOverduePopupVisible]);
-
-  useEffect(() => {
-    if (isWeeklyNoticeVisible) playWarningSound();
-  }, [isWeeklyNoticeVisible]);
-
-  useEffect(() => {
-    if (isMonthEndNotificationVisible && !isMonthEndNotificationDismissed) {
-        playWarningSound();
+    if (isAlertActive) {
+      playWarningSound();
+    } else {
+      stopWarningSound();
     }
-  }, [isMonthEndNotificationVisible]);
+
+    // Cleanup function to stop sound if component unmounts
+    return () => {
+      stopWarningSound();
+    };
+  }, [isWarningPopupVisible, isOverduePopupVisible, isWeeklyNoticeVisible, isMonthEndNotificationVisible, isMonthEndNotificationDismissed, liveNotification]);
 
 
   const handleCloseWarning = () => {
@@ -562,6 +616,10 @@ const App: React.FC = () => {
         return <TeamMemberTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'payments':
         return <PaymentsPage currentUserId={currentUserId} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
+      case 'budget':
+        return <BudgetPage />;
+      case 'mobile-noti':
+        return <MobileNotiPage />;
       case 'lead-history':
         return <LeadHistory leads={leads} />;
       default:
@@ -572,7 +630,15 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen bg-neutral-100 font-sans">
       <div className={`fixed inset-y-0 left-0 z-40 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 md:flex-shrink-0 transition-transform duration-300 ease-in-out`}>
-        <Sidebar currentView={currentView} setCurrentView={(view) => { setCurrentView(view); setSidebarOpen(false); }} currentUser={currentUser} onLogout={handleLogout} />
+        <Sidebar 
+            currentView={currentView} 
+            setCurrentView={(view) => { setCurrentView(view); setSidebarOpen(false); }} 
+            currentUser={currentUser} 
+            currentUserId={currentUserId}
+            onLogout={handleLogout} 
+            installPromptEvent={installPromptEvent}
+            handleInstallPrompt={handleInstallPrompt}
+        />
       </div>
       
       {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"></div>}
@@ -599,16 +665,6 @@ const App: React.FC = () => {
                         <BellIcon className="h-5 w-5" />
                       </button>
                     )}
-                    {installPromptEvent && (
-                        <button
-                          onClick={handleInstallPrompt}
-                          title="Install App"
-                          className="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
-                        >
-                          <ArrowDownTrayIcon className="h-5 w-5 sm:mr-2" />
-                          <span className="hidden sm:inline">Install App</span>
-                        </button>
-                    )}
                     <button 
                       onClick={() => { setEditingLead(null); setLeadFormVisible(true); }} 
                       title="Add New Lead"
@@ -619,6 +675,22 @@ const App: React.FC = () => {
                  </div>
             </div>
         </header>
+
+        {/* Live Notification Overlay */}
+        {liveNotification && (
+            <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[300] w-full max-w-sm p-4 rounded-lg shadow-2xl border-l-4 animate-pop-in ${liveNotification.type === 'warning' ? 'bg-red-100 border-red-500 text-red-900' : 'bg-blue-100 border-blue-500 text-blue-900'}`}>
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                        {liveNotification.type === 'warning' ? <WarningIcon className="h-6 w-6" /> : <BellIcon className="h-6 w-6" />}
+                        <div>
+                            <h3 className="font-bold text-lg">{liveNotification.title}</h3>
+                            <p className="text-sm">{liveNotification.body}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setLiveNotification(null)} className="opacity-60 hover:opacity-100"><XIcon /></button>
+                </div>
+            </div>
+        )}
 
         {isMonthEndNotificationVisible && !isMonthEndNotificationDismissed && (
           <div className="flex-shrink-0">
