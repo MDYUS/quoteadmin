@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   appName: 'Amaz Interior CRM',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    url: 'https://crmhead.amazmodularinterior.com/',
+    allowNavigation: ['crmhead.amazmodularinterior.com']
   },
   plugins: {
     PushNotifications: {
