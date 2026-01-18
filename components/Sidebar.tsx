@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, CreditCardIcon, LogoutIcon, DatabaseIcon, CalculatorIcon, ArrowDownTrayIcon, DevicePhoneMobileIcon, XIcon, ShareIcon } from './icons';
-import { LOGO_URL } from '../constants';
+import { LOGO_URL, APK_DOWNLOAD_URL } from '../constants';
 
 type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history' | 'budget' | 'mobile-noti';
 
@@ -48,16 +48,14 @@ const NavItem: React.FC<{
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentUser, currentUserId, onLogout, installPromptEvent, handleInstallPrompt }) => {
   // Yusuf's ID is 786786
   const isAdmin = currentUserId === '786786';
-  const [showInstallHelp, setShowInstallHelp] = useState(false);
 
-  const onInstallClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      if (installPromptEvent) {
-          handleInstallPrompt();
-      } else {
-          // Instead of a generic alert, show the help modal
-          setShowInstallHelp(true);
+  const onApkDownloadClick = (e: React.MouseEvent) => {
+      // Check if URL is configured (simple check)
+      if (APK_DOWNLOAD_URL.includes('expo.dev/artifacts/eas/....')) {
+          e.preventDefault();
+          alert("APK file URL is not configured yet.\n\nPlease host your .apk file (e.g., on Supabase Storage or Dropbox) and update the 'APK_DOWNLOAD_URL' in constants.ts");
       }
+      // Otherwise, let the anchor tag handle the download natively
   };
 
   return (
@@ -159,15 +157,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             />
           )}
 
-          {/* Download App - Always Visible */}
+          {/* DIRECT APK DOWNLOAD - Replaces Install Prompt */}
           <li>
             <a
-            href="#"
-            onClick={onInstallClick}
-            className={`flex items-center p-3 my-1 text-base rounded-lg transition-colors duration-200 ${installPromptEvent ? 'bg-green-600 text-white hover:bg-green-700 font-bold animate-pulse' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}
+            href={APK_DOWNLOAD_URL}
+            onClick={onApkDownloadClick}
+            download="AmazCRM.apk"
+            className="flex items-center p-3 my-1 text-base rounded-lg transition-colors duration-200 bg-green-600 text-white hover:bg-green-700 font-bold animate-pulse"
             >
             <ArrowDownTrayIcon className="w-6 h-6" />
-            <span className="ml-3 whitespace-nowrap">DOWNLOAD APP</span>
+            <span className="ml-3 whitespace-nowrap">DOWNLOAD APK</span>
             </a>
           </li>
         </ul>
@@ -189,56 +188,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
         </button>
       </div>
     </aside>
-
-    {/* Install Instructions Modal */}
-    {showInstallHelp && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black bg-opacity-80 p-4" onClick={() => setShowInstallHelp(false)}>
-            <div className="bg-white rounded-xl p-6 max-w-sm w-full text-neutral-900 shadow-2xl transform transition-all" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4 border-b border-neutral-200 pb-2">
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                        <ArrowDownTrayIcon className="h-5 w-5 text-primary-600"/>
-                        Install App Manually
-                    </h3>
-                    <button onClick={() => setShowInstallHelp(false)} className="text-neutral-500 hover:text-neutral-700"><XIcon /></button>
-                </div>
-                
-                <div className="space-y-6 text-sm">
-                    <p className="text-neutral-600">The automatic installer is not available. Please follow the steps for your device:</p>
-                    
-                    {/* Android Instructions */}
-                    <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-                        <p className="font-bold mb-2 flex items-center gap-2 text-neutral-800">
-                            🤖 Android (Chrome)
-                        </p>
-                        <ol className="list-decimal pl-5 space-y-2 text-neutral-700">
-                            <li>Tap the <span className="font-bold">three dots (⋮)</span> in the top right corner of the browser.</li>
-                            <li>Select <span className="font-bold">"Add to Home screen"</span> or <span className="font-bold">"Install App"</span>.</li>
-                            <li>Tap <strong>Install</strong> to confirm.</li>
-                        </ol>
-                    </div>
-
-                    {/* iOS Instructions */}
-                    <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-                        <p className="font-bold mb-2 flex items-center gap-2 text-neutral-800">
-                            🍎 iOS (Safari)
-                        </p>
-                        <ol className="list-decimal pl-5 space-y-2 text-neutral-700">
-                            <li>Tap the <span className="font-bold">Share icon</span> <ShareIcon className="inline h-4 w-4"/> at the bottom of the screen.</li>
-                            <li>Scroll down and tap <span className="font-bold">"Add to Home Screen"</span>.</li>
-                            <li>Tap <strong>Add</strong> in the top right.</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <button 
-                    onClick={() => setShowInstallHelp(false)} 
-                    className="mt-6 w-full bg-primary-600 text-white py-3 rounded-lg font-bold hover:bg-primary-700 transition-colors shadow-md"
-                >
-                    Got it, I'll try that!
-                </button>
-            </div>
-        </div>
-    )}
     </>
   );
 };

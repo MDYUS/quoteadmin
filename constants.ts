@@ -28,3 +28,7 @@ export const PROJECT_TYPE_OPTIONS: ProjectType[] = [
 export const LOGO_URL = 'https://res.cloudinary.com/dzvmyhpff/image/upload/v1759808706/highqualiamaz_etnjtt.webp';
 
 export const WARNING_SOUND_URL = 'https://pub-388f7f768ada498397e23af82c423ace.r2.dev/mixkit-security-facility-breach-alarm-994.wav';
+
+// REPLACE THIS URL with the actual direct link to your hosted .apk file
+// Example: 'https://mysite.com/app-release.apk' or Supabase Storage URL
+export const APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/..../AmazCRM.apk'; 
