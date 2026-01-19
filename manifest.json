@@ -1,6 +1,8 @@
+
 {
   "short_name": "Amaz CRM",
   "name": "Amaz Interior - CRM",
+  "description": "CRM Application for Amaz Interior management.",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -11,12 +13,16 @@
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#1e3a8a",
   "background_color": "#f1f5f9",
-  "scope": "/"
+  "scope": "/",
+  "categories": ["business", "productivity", "finance"],
+  "lang": "en"
 }

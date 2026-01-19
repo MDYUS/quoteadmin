@@ -5,12 +5,11 @@ const config: CapacitorConfig = {
   appId: 'com.amazinterior.crm',
   appName: 'Amaz Interior CRM',
   webDir: 'dist',
-  // NOTE: Server URL is commented out to force the app to use the local 'dist' bundle.
-  // This ensures the APK uses the fixed index.html (without importmap) instead of the potentially broken live site.
-  // server: {
-  //   url: 'https://crmhead.amazmodularinterior.com/',
-  //   allowNavigation: ['crmhead.amazmodularinterior.com']
-  // },
+  server: {
+    // This points the app to your live website
+    url: 'https://crmhead.amazmodularinterior.com/',
+    allowNavigation: ['crmhead.amazmodularinterior.com', 'res.cloudinary.com', 'pub-388f7f768ada498397e23af82c423ace.r2.dev']
+  },
   plugins: {
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
