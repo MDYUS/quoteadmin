@@ -12,7 +12,7 @@ const BudgetPage: React.FC = () => {
         const start = new Date(startDate);
         const newSchedule = [];
 
-        // Logic: Standard Payment Plan (formerly withWebsite=true)
+        // Logic: Standard Payment Plan
         newSchedule.push({
             label: 'Advance Payment',
             date: 'Immediate',
@@ -20,6 +20,7 @@ const BudgetPage: React.FC = () => {
             status: 'Triggers Website Work (7-12 Days)'
         });
         
+        // Calculate weekly amount based on Total Budget input
         const weeklyAmount = totalBudget > 0 ? totalBudget / 4 : 0;
         const formattedWeeklyAmount = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(weeklyAmount);
 
@@ -29,7 +30,7 @@ const BudgetPage: React.FC = () => {
             date.setDate(start.getDate() + (i * 7)); // Add 0, 7, 14, 21 days
             newSchedule.push({
                 label: `Week ${i + 1} Marketing`,
-                // Format date nicely (e.g., "Jan 14, 2024")
+                // Format date nicely (e.g., "14 Jan 2024")
                 date: date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
                 amount: formattedWeeklyAmount,
                 status: 'Ad Spend & Management'
@@ -49,7 +50,7 @@ const BudgetPage: React.FC = () => {
             {/* The Card Container */}
             <div className="w-full max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-neutral-200">
                 
-                {/* Left Panel: Blue background, Date Input */}
+                {/* Left Panel: Blue background, Input Fields */}
                 <div className="w-full md:w-1/3 bg-blue-600 p-6 text-white flex flex-col justify-center">
                     <h3 className="text-xl font-bold mb-4">Plan Your Start</h3>
                     <p className="mb-6 opacity-90 text-sm">Enter the total marketing budget to see the weekly breakdown.</p>
@@ -78,7 +79,7 @@ const BudgetPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right Panel: White background, The List */}
+                {/* Right Panel: White background, The Schedule List */}
                 <div className="w-full md:w-2/3 p-6 md:p-8">
                     <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center justify-between">
                         <span className="bg-green-100 text-green-700 p-2 rounded-full text-sm">
@@ -94,7 +95,6 @@ const BudgetPage: React.FC = () => {
                         {schedule.map((item, index) => (
                             <div 
                                 key={index}
-                                // Standard CSS Animation mimicking framer-motion stagger
                                 className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0 animate-fade-in opacity-0"
                                 style={{ 
                                     animationDelay: `${index * 0.1}s`,

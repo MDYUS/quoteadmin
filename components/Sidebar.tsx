@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, UserCircleIcon, CreditCardIcon, LogoutIcon, DatabaseIcon, CalculatorIcon, ArrowDownTrayIcon, DevicePhoneMobileIcon, XIcon, ShareIcon } from './icons';
+import { UsersIcon, DocumentTextIcon, CalendarIcon, ClipboardListIcon, CreditCardIcon, LogoutIcon, DatabaseIcon, CalculatorIcon, ArrowDownTrayIcon, DevicePhoneMobileIcon } from './icons';
 import { LOGO_URL, APK_DOWNLOAD_URL } from '../constants';
 
 type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history' | 'budget' | 'mobile-noti';
