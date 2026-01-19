@@ -5,10 +5,8 @@ import { useDevices } from './hooks/useDevices'; // Import Device Hook
 import LeadList from './components/LeadList';
 import LeadForm from './components/LeadForm';
 import Sidebar from './components/Sidebar';
-import QuotePage from './components/QuotePage';
 import SiteVisitCalendar from './components/SiteVisitCalendar';
 import ProjectTracker from './components/ProjectTracker';
-import TeamMemberTracker from './components/TeamMemberTracker';
 import PaymentsPage from './components/PaymentsPage';
 import LeadHistory from './components/LeadHistory';
 import InvoicePage from './components/InvoicePage';
@@ -19,7 +17,6 @@ import { Lead, LeadStatus, SiteVisit, Payment, PaymentType, PaymentStatus, Invoi
 import { CheckCircleIcon, MenuIcon, XIcon, PlusIcon, LoadingSpinner, XCircleIcon, BellIcon, ArrowDownTrayIcon, WarningIcon } from './components/icons';
 import { useSiteVisits } from './hooks/useSiteVisits';
 import { useProjects } from './hooks/useProjects';
-import { useTeamMembers } from './hooks/useTeamMembers';
 import { usePayments } from './hooks/usePayments';
 import { useInvoices } from './hooks/useInvoices';
 import LoginPage from './components/LoginPage';
@@ -102,7 +99,7 @@ const ScheduleVisitModal: React.FC<ScheduleVisitModalProps> = ({ lead, onSave, o
   );
 };
 
-type View = 'leads' | 'quote' | 'site-visits' | 'projects' | 'team' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history' | 'budget' | 'mobile-noti';
+type View = 'leads' | 'site-visits' | 'projects' | 'payments' | 'lead-history' | 'invoice' | 'invoice-history' | 'budget' | 'mobile-noti';
 
 const userNames: Record<string, string> = {
   '786786': 'Yusuf',
@@ -169,7 +166,6 @@ const App: React.FC = () => {
   const { leads, addLead, updateLead, deleteLead, isLoaded: leadsLoaded, error: leadsError } = useLeads();
   const { siteVisits, addVisit, updateVisit, deleteVisit } = useSiteVisits();
   const { projects, addProject, updateProject, deleteProject } = useProjects();
-  const { teamMembers, addTeamMember, updateTeamMember, deleteTeamMember } = useTeamMembers();
   const { payments } = usePayments();
   const { invoices, addInvoice, updateInvoice, deleteInvoice } = useInvoices();
 
@@ -602,8 +598,6 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'leads':
         return <LeadList leads={leads} onAdd={() => { setEditingLead(null); setLeadFormVisible(true); }} onEdit={(lead) => { setEditingLead(lead); setLeadFormVisible(true); }} onLeadStatusChange={handleLeadStatusChange} />;
-      case 'quote':
-        return <QuotePage />;
       case 'invoice':
         return <InvoicePage invoiceToEdit={editingInvoice} onSave={handleInvoiceSave} onCancel={() => { setEditingInvoice(null); setCurrentView('invoice-history'); }} />;
       case 'invoice-history':
@@ -612,8 +606,6 @@ const App: React.FC = () => {
         return <SiteVisitCalendar siteVisits={siteVisits} addVisit={addVisit} updateVisit={updateVisit} deleteVisit={deleteVisit} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'projects':
         return <ProjectTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
-      case 'team':
-        return <TeamMemberTracker setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'payments':
         return <PaymentsPage currentUserId={currentUserId} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage} />;
       case 'budget':
