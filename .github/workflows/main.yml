@@ -1,0 +1,67 @@
+name: Build Android Release APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Assets
+        run: npm run build
+
+      - name: Initialize Capacitor Android
+        run: |
+          npx cap add android || true
+          npx cap sync android
+
+      - name: Generate Keystore
+        run: |
+          # Generate a keystore file for signing the release APK
+          keytool -genkeypair -v -keystore release.keystore -alias android_release -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=AmazCRM, OU=Mobile, O=Amaz, L=Chennai, S=TN, C=IN" -storepass android -keypass android
+
+      - name: Build Unsigned Release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Sign APK
+        run: |
+          # Find the apksigner tool
+          APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name "apksigner" | sort -r | head -n 1)
+          
+          # Sign the APK
+          $APKSIGNER sign --ks release.keystore --ks-pass pass:android --key-pass pass:android --out AmazCRM-Release.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AmazCRM-Release-App
+          path: AmazCRM-Release.apk
