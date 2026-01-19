@@ -80,13 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             icon={<UsersIcon className="w-6 h-6" />}
             label="Leads"
           />
-          <NavItem 
-            view="quote"
-            currentView={currentView}
-            setCurrentView={setCurrentView}
-            icon={<DocumentTextIcon className="w-6 h-6" />}
-            label="Create Quote"
-          />
            <NavItem 
             view="invoice"
             currentView={currentView}
@@ -114,13 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, currentU
             setCurrentView={setCurrentView}
             icon={<ClipboardListIcon className="w-6 h-6" />}
             label="Project Tracker"
-          />
-           <NavItem 
-            view="team"
-            currentView={currentView}
-            setCurrentView={setCurrentView}
-            icon={<UserCircleIcon className="w-6 h-6" />}
-            label="Team Members"
           />
            <NavItem 
             view="payments"

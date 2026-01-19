@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 const BudgetPage: React.FC = () => {
     // 1. STATE
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+    const [totalBudget, setTotalBudget] = useState<number>(14000);
     const [schedule, setSchedule] = useState<{ label: string; date: string; amount: string; status: string }[]>([]);
 
     // 2. LOGIC
@@ -19,7 +20,10 @@ const BudgetPage: React.FC = () => {
             status: 'Triggers Website Work (7-12 Days)'
         });
         
-        // Generate 4 weeks of marketing payments (₹3,500/week)
+        const weeklyAmount = totalBudget > 0 ? totalBudget / 4 : 0;
+        const formattedWeeklyAmount = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(weeklyAmount);
+
+        // Generate 4 weeks of marketing payments (Split totalBudget / 4)
         for (let i = 0; i < 4; i++) {
             const date = new Date(start);
             date.setDate(start.getDate() + (i * 7)); // Add 0, 7, 14, 21 days
@@ -27,13 +31,13 @@ const BudgetPage: React.FC = () => {
                 label: `Week ${i + 1} Marketing`,
                 // Format date nicely (e.g., "Jan 14, 2024")
                 date: date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-                amount: '₹3,500',
+                amount: formattedWeeklyAmount,
                 status: 'Ad Spend & Management'
             });
         }
         
         setSchedule(newSchedule);
-    }, [startDate]);
+    }, [startDate, totalBudget]);
 
     // 3. UI RENDER
     return (
@@ -48,8 +52,17 @@ const BudgetPage: React.FC = () => {
                 {/* Left Panel: Blue background, Date Input */}
                 <div className="w-full md:w-1/3 bg-blue-600 p-6 text-white flex flex-col justify-center">
                     <h3 className="text-xl font-bold mb-4">Plan Your Start</h3>
-                    <p className="mb-6 opacity-90 text-sm">Select when you want to launch your marketing campaigns.</p>
+                    <p className="mb-6 opacity-90 text-sm">Enter the total marketing budget to see the weekly breakdown.</p>
                     
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2">Total Marketing Budget (4 Weeks)</label>
+                    <input 
+                        type="number" 
+                        value={totalBudget}
+                        onChange={(e) => setTotalBudget(parseFloat(e.target.value) || 0)}
+                        className="w-full p-3 rounded-lg text-gray-800 font-bold mb-4 focus:outline-none focus:ring-4 focus:ring-blue-400"
+                        placeholder="e.g. 14000"
+                    />
+
                     <label className="block text-xs font-bold uppercase tracking-wider mb-2">Marketing Start Date</label>
                     <input 
                         type="date" 
@@ -67,9 +80,12 @@ const BudgetPage: React.FC = () => {
 
                 {/* Right Panel: White background, The List */}
                 <div className="w-full md:w-2/3 p-6 md:p-8">
-                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                        <span className="bg-green-100 text-green-700 p-2 rounded-full mr-3 text-sm">
+                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center justify-between">
+                        <span className="bg-green-100 text-green-700 p-2 rounded-full text-sm">
                             Marketing + Website Plan
+                        </span>
+                        <span className="text-sm text-gray-500 font-semibold">
+                            Total Est: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalBudget + 5000)}
                         </span>
                     </h3>
                     
